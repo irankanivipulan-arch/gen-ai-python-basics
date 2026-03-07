@@ -1,0 +1,756 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Python AI/ML Ecosystem</title>
+<link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@300;400;600;700&family=Syne:wght@400;700;800&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --bg: #050810;
+    --grid: rgba(255,255,255,0.03);
+    --accent1: #00f5c4;
+    --accent2: #ff3c6f;
+    --accent3: #7c6fff;
+    --accent4: #ffd84d;
+    --accent5: #ff8c42;
+    --text: #e8eaf6;
+    --muted: #5a6080;
+    --card-bg: rgba(255,255,255,0.035);
+    --card-border: rgba(255,255,255,0.07);
+  }
+
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+
+  body {
+    background: var(--bg);
+    color: var(--text);
+    font-family: 'JetBrains Mono', monospace;
+    min-height: 100vh;
+    overflow-x: hidden;
+  }
+
+  /* Grid background */
+  body::before {
+    content: '';
+    position: fixed;
+    inset: 0;
+    background-image:
+      linear-gradient(var(--grid) 1px, transparent 1px),
+      linear-gradient(90deg, var(--grid) 1px, transparent 1px);
+    background-size: 40px 40px;
+    pointer-events: none;
+    z-index: 0;
+  }
+
+  /* Glow orbs */
+  .orb {
+    position: fixed;
+    border-radius: 50%;
+    filter: blur(120px);
+    opacity: 0.12;
+    pointer-events: none;
+    z-index: 0;
+  }
+  .orb1 { width: 600px; height: 600px; background: var(--accent3); top: -200px; left: -200px; }
+  .orb2 { width: 500px; height: 500px; background: var(--accent1); bottom: -150px; right: -150px; }
+  .orb3 { width: 400px; height: 400px; background: var(--accent2); top: 50%; left: 50%; transform: translate(-50%,-50%); }
+
+  .wrapper {
+    position: relative;
+    z-index: 1;
+    max-width: 1400px;
+    margin: 0 auto;
+    padding: 60px 30px 80px;
+  }
+
+  /* Header */
+  header {
+    text-align: center;
+    margin-bottom: 70px;
+    animation: fadeDown 0.8s ease both;
+  }
+
+  header .eyebrow {
+    font-size: 11px;
+    letter-spacing: 0.3em;
+    color: var(--accent1);
+    text-transform: uppercase;
+    margin-bottom: 14px;
+    opacity: 0.8;
+  }
+
+  header h1 {
+    font-family: 'Syne', sans-serif;
+    font-size: clamp(2.2rem, 5vw, 4rem);
+    font-weight: 800;
+    line-height: 1.1;
+    background: linear-gradient(135deg, #fff 0%, var(--accent1) 50%, var(--accent3) 100%);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+    margin-bottom: 16px;
+  }
+
+  header p {
+    font-size: 13px;
+    color: var(--muted);
+    max-width: 600px;
+    margin: 0 auto;
+    line-height: 1.8;
+  }
+
+  /* Layer system */
+  .layer {
+    margin-bottom: 28px;
+    animation: fadeUp 0.6s ease both;
+  }
+  .layer:nth-child(1) { animation-delay: 0.1s; }
+  .layer:nth-child(2) { animation-delay: 0.2s; }
+  .layer:nth-child(3) { animation-delay: 0.3s; }
+  .layer:nth-child(4) { animation-delay: 0.4s; }
+  .layer:nth-child(5) { animation-delay: 0.5s; }
+  .layer:nth-child(6) { animation-delay: 0.6s; }
+  .layer:nth-child(7) { animation-delay: 0.7s; }
+  .layer:nth-child(8) { animation-delay: 0.8s; }
+
+  .layer-header {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    margin-bottom: 14px;
+  }
+
+  .layer-num {
+    font-size: 10px;
+    color: var(--muted);
+    font-weight: 600;
+    letter-spacing: 0.15em;
+    min-width: 28px;
+  }
+
+  .layer-title {
+    font-family: 'Syne', sans-serif;
+    font-size: 11px;
+    font-weight: 700;
+    letter-spacing: 0.25em;
+    text-transform: uppercase;
+  }
+
+  .layer-line {
+    flex: 1;
+    height: 1px;
+    background: linear-gradient(90deg, currentColor 0%, transparent 100%);
+    opacity: 0.2;
+  }
+
+  .cards {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 10px;
+  }
+
+  .card {
+    background: var(--card-bg);
+    border: 1px solid var(--card-border);
+    border-radius: 8px;
+    padding: 14px 18px;
+    position: relative;
+    overflow: hidden;
+    transition: transform 0.2s ease, border-color 0.2s ease, box-shadow 0.2s ease;
+    cursor: default;
+    min-width: 140px;
+  }
+
+  .card::before {
+    content: '';
+    position: absolute;
+    top: 0; left: 0; right: 0;
+    height: 2px;
+    background: linear-gradient(90deg, transparent, currentColor, transparent);
+    opacity: 0;
+    transition: opacity 0.3s;
+  }
+
+  .card:hover {
+    transform: translateY(-3px);
+    border-color: rgba(255,255,255,0.15);
+    box-shadow: 0 12px 40px rgba(0,0,0,0.4);
+  }
+
+  .card:hover::before { opacity: 0.6; }
+
+  .card-name {
+    font-size: 13px;
+    font-weight: 600;
+    margin-bottom: 4px;
+    color: var(--text);
+  }
+
+  .card-desc {
+    font-size: 10px;
+    color: var(--muted);
+    line-height: 1.5;
+  }
+
+  .card-lang {
+    display: inline-block;
+    font-size: 9px;
+    font-weight: 700;
+    letter-spacing: 0.1em;
+    padding: 2px 7px;
+    border-radius: 3px;
+    margin-top: 7px;
+    text-transform: uppercase;
+  }
+
+  /* Color themes per layer */
+  .l-infra { color: var(--accent5); }
+  .l-infra .card { border-color: rgba(255,140,66,0.15); }
+  .l-infra .card:hover { border-color: rgba(255,140,66,0.35); box-shadow: 0 12px 40px rgba(255,140,66,0.1); }
+
+  .l-env { color: var(--accent4); }
+  .l-env .card { border-color: rgba(255,216,77,0.15); }
+  .l-env .card:hover { border-color: rgba(255,216,77,0.35); box-shadow: 0 12px 40px rgba(255,216,77,0.1); }
+
+  .l-core { color: var(--accent1); }
+  .l-core .card { border-color: rgba(0,245,196,0.15); }
+  .l-core .card:hover { border-color: rgba(0,245,196,0.35); box-shadow: 0 12px 40px rgba(0,245,196,0.1); }
+
+  .l-ml { color: var(--accent3); }
+  .l-ml .card { border-color: rgba(124,111,255,0.15); }
+  .l-ml .card:hover { border-color: rgba(124,111,255,0.35); box-shadow: 0 12px 40px rgba(124,111,255,0.1); }
+
+  .l-data { color: #4dc9ff; }
+  .l-data .card { border-color: rgba(77,201,255,0.15); }
+  .l-data .card:hover { border-color: rgba(77,201,255,0.35); box-shadow: 0 12px 40px rgba(77,201,255,0.1); }
+
+  .l-train { color: #c084fc; }
+  .l-train .card { border-color: rgba(192,132,252,0.15); }
+  .l-train .card:hover { border-color: rgba(192,132,252,0.35); box-shadow: 0 12px 40px rgba(192,132,252,0.1); }
+
+  .l-serve { color: var(--accent2); }
+  .l-serve .card { border-color: rgba(255,60,111,0.15); }
+  .l-serve .card:hover { border-color: rgba(255,60,111,0.35); box-shadow: 0 12px 40px rgba(255,60,111,0.1); }
+
+  .l-obs { color: #34d399; }
+  .l-obs .card { border-color: rgba(52,211,153,0.15); }
+  .l-obs .card:hover { border-color: rgba(52,211,153,0.35); box-shadow: 0 12px 40px rgba(52,211,153,0.1); }
+
+  /* Language badge colors */
+  .lang-py { background: rgba(59,130,246,0.2); color: #60a5fa; }
+  .lang-cpp { background: rgba(239,68,68,0.2); color: #f87171; }
+  .lang-c { background: rgba(245,158,11,0.2); color: #fbbf24; }
+  .lang-rust { background: rgba(251,146,60,0.2); color: #fb923c; }
+  .lang-go { background: rgba(34,211,238,0.2); color: #22d3ee; }
+  .lang-fortran { background: rgba(167,139,250,0.2); color: #a78bfa; }
+  .lang-cuda { background: rgba(74,222,128,0.2); color: #4ade80; }
+  .lang-multi { background: rgba(255,255,255,0.1); color: #94a3b8; }
+
+  /* Special wide card */
+  .card-wide { flex: 1; min-width: 200px; }
+  .card-xl { flex: 2; min-width: 260px; }
+
+  /* Section divider */
+  .divider {
+    display: flex;
+    align-items: center;
+    gap: 16px;
+    margin: 40px 0 28px;
+    opacity: 0.4;
+  }
+  .divider span { font-size: 10px; letter-spacing: 0.2em; text-transform: uppercase; color: var(--muted); white-space: nowrap; }
+  .divider::before, .divider::after { content: ''; flex: 1; height: 1px; background: var(--muted); }
+
+  /* Flow arrows between layers */
+  .flow-arrow {
+    display: flex;
+    justify-content: center;
+    margin: 4px 0;
+    opacity: 0.25;
+    font-size: 18px;
+    color: var(--muted);
+  }
+
+  /* Legend */
+  .legend {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 16px;
+    margin-top: 50px;
+    padding: 20px 24px;
+    background: var(--card-bg);
+    border: 1px solid var(--card-border);
+    border-radius: 10px;
+  }
+
+  .legend-title {
+    width: 100%;
+    font-size: 10px;
+    letter-spacing: 0.25em;
+    text-transform: uppercase;
+    color: var(--muted);
+    margin-bottom: 4px;
+  }
+
+  .legend-item {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    font-size: 10px;
+    color: var(--muted);
+  }
+
+  .legend-dot {
+    width: 8px; height: 8px;
+    border-radius: 2px;
+    flex-shrink: 0;
+  }
+
+  @keyframes fadeDown {
+    from { opacity: 0; transform: translateY(-20px); }
+    to { opacity: 1; transform: translateY(0); }
+  }
+
+  @keyframes fadeUp {
+    from { opacity: 0; transform: translateY(20px); }
+    to { opacity: 1; transform: translateY(0); }
+  }
+
+  /* Connector lines visual */
+  .connector-row {
+    display: flex;
+    justify-content: center;
+    gap: 60px;
+    margin: -6px 0;
+    opacity: 0.15;
+  }
+  .connector-line {
+    width: 1px;
+    height: 20px;
+    background: linear-gradient(180deg, var(--muted), transparent);
+  }
+</style>
+</head>
+<body>
+<div class="orb orb1"></div>
+<div class="orb orb2"></div>
+<div class="orb orb3"></div>
+
+<div class="wrapper">
+
+  <header>
+    <div class="eyebrow">Reference Architecture</div>
+    <h1>Python AI/ML Ecosystem</h1>
+    <p>From raw silicon to production inference — every layer, every language, every tool that powers modern machine learning systems.</p>
+  </header>
+
+  <!-- LAYER 1: INFRASTRUCTURE -->
+  <div class="layer l-infra">
+    <div class="layer-header">
+      <span class="layer-num">L1</span>
+      <span class="layer-title">Infrastructure & Orchestration</span>
+      <div class="layer-line"></div>
+    </div>
+    <div class="cards">
+      <div class="card card-wide">
+        <div class="card-name">Kubernetes (k8s)</div>
+        <div class="card-desc">Container orchestration, auto-scaling, GPU node pools, job scheduling</div>
+        <span class="card-lang lang-go">Go</span>
+      </div>
+      <div class="card card-wide">
+        <div class="card-name">Docker</div>
+        <div class="card-desc">Containerize training jobs, inference servers, data pipelines</div>
+        <span class="card-lang lang-go">Go</span>
+      </div>
+      <div class="card">
+        <div class="card-name">Helm</div>
+        <div class="card-desc">k8s package manager for ML workloads</div>
+        <span class="card-lang lang-go">Go</span>
+      </div>
+      <div class="card">
+        <div class="card-name">Terraform</div>
+        <div class="card-desc">IaC for cloud GPU clusters</div>
+        <span class="card-lang lang-go">Go/HCL</span>
+      </div>
+      <div class="card">
+        <div class="card-name">Ray Cluster</div>
+        <div class="card-desc">Distributed compute scheduling</div>
+        <span class="card-lang lang-py">Python/C++</span>
+      </div>
+      <div class="card">
+        <div class="card-name">Slurm</div>
+        <div class="card-desc">HPC job scheduler for supercomputers</div>
+        <span class="card-lang lang-c">C</span>
+      </div>
+      <div class="card">
+        <div class="card-name">Airflow / Prefect</div>
+        <div class="card-desc">Workflow DAG orchestration</div>
+        <span class="card-lang lang-py">Python</span>
+      </div>
+    </div>
+  </div>
+
+  <div class="flow-arrow">↕</div>
+
+  <!-- LAYER 2: ENVIRONMENT MANAGEMENT -->
+  <div class="layer l-env">
+    <div class="layer-header">
+      <span class="layer-num">L2</span>
+      <span class="layer-title">Environment & Package Management</span>
+      <div class="layer-line"></div>
+    </div>
+    <div class="cards">
+      <div class="card">
+        <div class="card-name">pip</div>
+        <div class="card-desc">PyPA package installer, PyPI packages</div>
+        <span class="card-lang lang-py">Python</span>
+      </div>
+      <div class="card">
+        <div class="card-name">conda / mamba</div>
+        <div class="card-desc">Cross-platform env + binary deps (CUDA, MKL)</div>
+        <span class="card-lang lang-py">Python/C++</span>
+      </div>
+      <div class="card">
+        <div class="card-name">venv / virtualenv</div>
+        <div class="card-desc">Isolated Python runtime environments</div>
+        <span class="card-lang lang-py">Python</span>
+      </div>
+      <div class="card">
+        <div class="card-name">uv</div>
+        <div class="card-desc">Blazing-fast pip replacement</div>
+        <span class="card-lang lang-rust">Rust</span>
+      </div>
+      <div class="card">
+        <div class="card-name">poetry / pdm</div>
+        <div class="card-desc">Dependency resolution & lock files</div>
+        <span class="card-lang lang-py">Python</span>
+      </div>
+      <div class="card">
+        <div class="card-name">pyproject.toml</div>
+        <div class="card-desc">PEP 517/518 build system config</div>
+        <span class="card-lang lang-multi">TOML</span>
+      </div>
+    </div>
+  </div>
+
+  <div class="flow-arrow">↕</div>
+
+  <!-- LAYER 3: CORE NUMERICAL STACK -->
+  <div class="layer l-core">
+    <div class="layer-header">
+      <span class="layer-num">L3</span>
+      <span class="layer-title">Core Numerical Stack — the Foundation</span>
+      <div class="layer-line"></div>
+    </div>
+    <div class="cards">
+      <div class="card card-xl">
+        <div class="card-name">NumPy</div>
+        <div class="card-desc">N-dimensional arrays, linear algebra. Binds BLAS/LAPACK via Fortran routines. The bedrock of all numerical Python.</div>
+        <span class="card-lang lang-fortran">Fortran</span>&nbsp;<span class="card-lang lang-c">C</span>
+      </div>
+      <div class="card card-wide">
+        <div class="card-name">SciPy</div>
+        <div class="card-desc">Scientific algorithms: FFT, optimization, sparse matrices — wraps LAPACK/ARPACK</div>
+        <span class="card-lang lang-fortran">Fortran</span><span class="card-lang lang-c" style="margin-left:4px">C</span>
+      </div>
+      <div class="card card-wide">
+        <div class="card-name">CUDA Toolkit</div>
+        <div class="card-desc">GPU compute primitives: cuBLAS, cuDNN, NCCL for distributed allreduce</div>
+        <span class="card-lang lang-cuda">CUDA/C</span>
+      </div>
+      <div class="card">
+        <div class="card-name">OpenBLAS / MKL</div>
+        <div class="card-desc">CPU-optimized BLAS kernels</div>
+        <span class="card-lang lang-fortran">Fortran/C</span>
+      </div>
+      <div class="card">
+        <div class="card-name">Cython / ctypes</div>
+        <div class="card-desc">Python ↔ C/C++ bindings layer</div>
+        <span class="card-lang lang-c">C</span>
+      </div>
+      <div class="card">
+        <div class="card-name">Pybind11</div>
+        <div class="card-desc">C++11 ↔ Python seamless bindings</div>
+        <span class="card-lang lang-cpp">C++</span>
+      </div>
+    </div>
+  </div>
+
+  <div class="flow-arrow">↕</div>
+
+  <!-- LAYER 4: ML FRAMEWORKS -->
+  <div class="layer l-ml">
+    <div class="layer-header">
+      <span class="layer-num">L4</span>
+      <span class="layer-title">ML Frameworks & Deep Learning</span>
+      <div class="layer-line"></div>
+    </div>
+    <div class="cards">
+      <div class="card card-xl">
+        <div class="card-name">PyTorch</div>
+        <div class="card-desc">Dynamic autograd, eager execution, torch.compile with TorchInductor. Core written in C++ with LibTorch. Foundation for most modern LLM research.</div>
+        <span class="card-lang lang-cpp">C++</span>&nbsp;<span class="card-lang lang-cuda">CUDA</span>
+      </div>
+      <div class="card card-xl">
+        <div class="card-name">TensorFlow / Keras</div>
+        <div class="card-desc">Static + eager graph execution, XLA compiler, TFLite for edge deployment, SavedModel format</div>
+        <span class="card-lang lang-cpp">C++</span>&nbsp;<span class="card-lang lang-cuda">CUDA</span>
+      </div>
+      <div class="card card-wide">
+        <div class="card-name">JAX</div>
+        <div class="card-desc">Functional transforms: grad, jit, vmap, pmap. XLA backend. Used at DeepMind/Google.</div>
+        <span class="card-lang lang-cpp">C++/XLA</span>
+      </div>
+      <div class="card">
+        <div class="card-name">MXNet</div>
+        <div class="card-desc">Apache, symbolic + imperative</div>
+        <span class="card-lang lang-cpp">C++</span>
+      </div>
+      <div class="card">
+        <div class="card-name">PaddlePaddle</div>
+        <div class="card-desc">Baidu's production DL framework</div>
+        <span class="card-lang lang-cpp">C++</span>
+      </div>
+      <div class="card">
+        <div class="card-name">scikit-learn</div>
+        <div class="card-desc">Classical ML: SVM, trees, pipelines</div>
+        <span class="card-lang lang-c">C/Cython</span>
+      </div>
+      <div class="card">
+        <div class="card-name">XGBoost / LightGBM</div>
+        <div class="card-desc">Gradient boosting champions</div>
+        <span class="card-lang lang-cpp">C++</span>
+      </div>
+      <div class="card">
+        <div class="card-name">Hugging Face Transformers</div>
+        <div class="card-desc">1000s of pretrained model weights + tokenizers</div>
+        <span class="card-lang lang-py">Python</span>
+      </div>
+    </div>
+  </div>
+
+  <div class="flow-arrow">↕</div>
+
+  <!-- LAYER 5: DATA -->
+  <div class="layer l-data">
+    <div class="layer-header">
+      <span class="layer-num">L5</span>
+      <span class="layer-title">Data Layer — Ingestion, Storage, Vector Search</span>
+      <div class="layer-line"></div>
+    </div>
+    <div class="cards">
+      <div class="card card-wide">
+        <div class="card-name">Pandas / Polars</div>
+        <div class="card-desc">DataFrames. Polars is blazing-fast with Apache Arrow. Pandas built on NumPy.</div>
+        <span class="card-lang lang-rust">Rust</span><span class="card-lang lang-c" style="margin-left:4px">C</span>
+      </div>
+      <div class="card card-wide">
+        <div class="card-name">Vector DBs (Pinecone / Qdrant / Weaviate / Milvus)</div>
+        <div class="card-desc">ANN search: HNSW, IVF-PQ indexes. Qdrant written in Rust for safety + speed.</div>
+        <span class="card-lang lang-rust">Rust</span><span class="card-lang lang-go" style="margin-left:4px">Go</span>
+      </div>
+      <div class="card">
+        <div class="card-name">Apache Arrow</div>
+        <div class="card-desc">Columnar in-memory format, zero-copy IPC</div>
+        <span class="card-lang lang-cpp">C++</span>
+      </div>
+      <div class="card">
+        <div class="card-name">DuckDB</div>
+        <div class="card-desc">In-process OLAP SQL, Parquet-native</div>
+        <span class="card-lang lang-cpp">C++</span>
+      </div>
+      <div class="card">
+        <div class="card-name">Apache Spark (PySpark)</div>
+        <div class="card-desc">Distributed batch processing, feature engineering</div>
+        <span class="card-lang lang-multi">Scala/JVM</span>
+      </div>
+      <div class="card">
+        <div class="card-name">Kafka / Flink</div>
+        <div class="card-desc">Real-time streaming data pipelines</div>
+        <span class="card-lang lang-multi">Java</span>
+      </div>
+      <div class="card">
+        <div class="card-name">LanceDB / ChromaDB</div>
+        <div class="card-desc">Embedded vector storage for RAG systems</div>
+        <span class="card-lang lang-rust">Rust</span>
+      </div>
+      <div class="card">
+        <div class="card-name">Dask / Modin</div>
+        <div class="card-desc">Parallel pandas on multi-core / cluster</div>
+        <span class="card-lang lang-py">Python</span>
+      </div>
+    </div>
+  </div>
+
+  <div class="flow-arrow">↕</div>
+
+  <!-- LAYER 6: TRAINING -->
+  <div class="layer l-train">
+    <div class="layer-header">
+      <span class="layer-num">L6</span>
+      <span class="layer-title">Model Training, Experiment Tracking & LLM Tooling</span>
+      <div class="layer-line"></div>
+    </div>
+    <div class="cards">
+      <div class="card card-wide">
+        <div class="card-name">Accelerate / DeepSpeed / FSDP</div>
+        <div class="card-desc">Multi-GPU / multi-node training, ZeRO optimizer stages, gradient checkpointing</div>
+        <span class="card-lang lang-py">Python/CUDA</span>
+      </div>
+      <div class="card card-wide">
+        <div class="card-name">MLflow / W&B / Neptune</div>
+        <div class="card-desc">Experiment tracking, hyperparameter logging, model registry, artifact management</div>
+        <span class="card-lang lang-py">Python</span><span class="card-lang lang-go" style="margin-left:4px">Go</span>
+      </div>
+      <div class="card">
+        <div class="card-name">Optuna / Ray Tune</div>
+        <div class="card-desc">Hyperparameter optimization (Bayesian, TPE)</div>
+        <span class="card-lang lang-py">Python</span>
+      </div>
+      <div class="card">
+        <div class="card-name">PEFT / LoRA</div>
+        <div class="card-desc">Parameter-efficient fine-tuning adapters</div>
+        <span class="card-lang lang-py">Python</span>
+      </div>
+      <div class="card">
+        <div class="card-name">TRL / trlX</div>
+        <div class="card-desc">RLHF, PPO, DPO for LLM alignment</div>
+        <span class="card-lang lang-py">Python</span>
+      </div>
+      <div class="card">
+        <div class="card-name">Flash Attention</div>
+        <div class="card-desc">IO-aware exact attention kernel</div>
+        <span class="card-lang lang-cuda">CUDA/C++</span>
+      </div>
+      <div class="card">
+        <div class="card-name">Megatron-LM</div>
+        <div class="card-desc">NVIDIA tensor/pipeline parallelism</div>
+        <span class="card-lang lang-cpp">C++/CUDA</span>
+      </div>
+      <div class="card">
+        <div class="card-name">DVC</div>
+        <div class="card-desc">Data version control for ML datasets</div>
+        <span class="card-lang lang-py">Python</span>
+      </div>
+    </div>
+  </div>
+
+  <div class="flow-arrow">↕</div>
+
+  <!-- LAYER 7: SERVING -->
+  <div class="layer l-serve">
+    <div class="layer-header">
+      <span class="layer-num">L7</span>
+      <span class="layer-title">Inference, Serving & Model Deployment</span>
+      <div class="layer-line"></div>
+    </div>
+    <div class="cards">
+      <div class="card card-wide">
+        <div class="card-name">vLLM</div>
+        <div class="card-desc">PagedAttention for LLM serving, continuous batching, high-throughput OpenAI-compatible endpoints</div>
+        <span class="card-lang lang-cuda">CUDA/C++</span>
+      </div>
+      <div class="card card-wide">
+        <div class="card-name">TorchServe / BentoML / Triton</div>
+        <div class="card-desc">NVIDIA Triton: multi-framework model serving with dynamic batching and CUDA graphs</div>
+        <span class="card-lang lang-cpp">C++</span><span class="card-lang lang-go" style="margin-left:4px">Go</span>
+      </div>
+      <div class="card">
+        <div class="card-name">ONNX Runtime</div>
+        <div class="card-desc">Cross-framework inference optimization</div>
+        <span class="card-lang lang-cpp">C++</span>
+      </div>
+      <div class="card">
+        <div class="card-name">TensorRT / TensorRT-LLM</div>
+        <div class="card-desc">NVIDIA GPU inference compiler, INT8/FP8</div>
+        <span class="card-lang lang-cpp">C++/CUDA</span>
+      </div>
+      <div class="card">
+        <div class="card-name">llama.cpp</div>
+        <div class="card-desc">CPU/GPU GGUF inference for local LLMs</div>
+        <span class="card-lang lang-cpp">C++</span>
+      </div>
+      <div class="card">
+        <div class="card-name">FastAPI / Ray Serve</div>
+        <div class="card-desc">REST endpoints, async inference routing</div>
+        <span class="card-lang lang-py">Python</span>
+      </div>
+      <div class="card">
+        <div class="card-name">Seldon / KServe</div>
+        <div class="card-desc">k8s-native model serving operators</div>
+        <span class="card-lang lang-go">Go</span>
+      </div>
+      <div class="card">
+        <div class="card-name">LangChain / LlamaIndex</div>
+        <div class="card-desc">LLM orchestration: chains, agents, RAG</div>
+        <span class="card-lang lang-py">Python</span>
+      </div>
+    </div>
+  </div>
+
+  <div class="flow-arrow">↕</div>
+
+  <!-- LAYER 8: OBSERVABILITY -->
+  <div class="layer l-obs">
+    <div class="layer-header">
+      <span class="layer-num">L8</span>
+      <span class="layer-title">Observability, Monitoring & MLOps</span>
+      <div class="layer-line"></div>
+    </div>
+    <div class="cards">
+      <div class="card card-wide">
+        <div class="card-name">Prometheus + Grafana</div>
+        <div class="card-desc">Metrics scraping, GPU utilization dashboards, alerting rules for inference latency SLOs</div>
+        <span class="card-lang lang-go">Go</span>
+      </div>
+      <div class="card card-wide">
+        <div class="card-name">OpenTelemetry / Jaeger</div>
+        <div class="card-desc">Distributed tracing across inference pipelines and microservices</div>
+        <span class="card-lang lang-go">Go</span>
+      </div>
+      <div class="card">
+        <div class="card-name">Evidently AI</div>
+        <div class="card-desc">Data drift, model degradation detection</div>
+        <span class="card-lang lang-py">Python</span>
+      </div>
+      <div class="card">
+        <div class="card-name">Arize / WhyLabs</div>
+        <div class="card-desc">LLM observability, embedding drift monitoring</div>
+        <span class="card-lang lang-py">Python</span>
+      </div>
+      <div class="card">
+        <div class="card-name">DCGM / nvitop</div>
+        <div class="card-desc">NVIDIA GPU cluster monitoring agents</div>
+        <span class="card-lang lang-c">C/Go</span>
+      </div>
+      <div class="card">
+        <div class="card-name">Loki / Fluentd</div>
+        <div class="card-desc">Log aggregation for training runs</div>
+        <span class="card-lang lang-go">Go</span>
+      </div>
+      <div class="card">
+        <div class="card-name">Great Expectations</div>
+        <div class="card-desc">Data quality contracts & test suites</div>
+        <span class="card-lang lang-py">Python</span>
+      </div>
+    </div>
+  </div>
+
+  <!-- Legend -->
+  <div class="legend">
+    <div class="legend-title">Language Legend</div>
+    <div class="legend-item"><div class="legend-dot" style="background:#60a5fa"></div>Python</div>
+    <div class="legend-item"><div class="legend-dot" style="background:#f87171"></div>C++</div>
+    <div class="legend-item"><div class="legend-dot" style="background:#fbbf24"></div>C</div>
+    <div class="legend-item"><div class="legend-dot" style="background:#a78bfa"></div>Fortran</div>
+    <div class="legend-item"><div class="legend-dot" style="background:#4ade80"></div>CUDA</div>
+    <div class="legend-item"><div class="legend-dot" style="background:#fb923c"></div>Rust</div>
+    <div class="legend-item"><div class="legend-dot" style="background:#22d3ee"></div>Go</div>
+    <div class="legend-item"><div class="legend-dot" style="background:#94a3b8"></div>Multi/Other</div>
+    <div class="legend-item" style="margin-left:auto; color: var(--muted); font-size:10px">Hover cards to highlight · Layers flow top→bottom</div>
+  </div>
+
+</div>
+</body>
+</html>

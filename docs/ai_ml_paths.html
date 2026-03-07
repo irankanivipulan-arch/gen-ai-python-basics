@@ -1,0 +1,949 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Human Paths in AI/ML</title>
+<link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=DM+Serif+Display:ital@0;1&family=IBM+Plex+Mono:wght@300;400;500&family=Fraunces:wght@300;600;900&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --bg: #0a0a08;
+    --ink: #f0ece0;
+    --muted: #8a8778;
+    --accent1: #e8c547;
+    --accent2: #ff6b35;
+    --accent3: #4ecdc4;
+    --accent4: #c77dff;
+    --accent5: #ff4d6d;
+    --accent6: #74b816;
+    --card-bg: #111110;
+    --border: rgba(240,236,224,0.08);
+  }
+
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+
+  body {
+    background: var(--bg);
+    color: var(--ink);
+    font-family: 'IBM Plex Mono', monospace;
+    overflow-x: hidden;
+    cursor: crosshair;
+  }
+
+  /* Noise texture overlay */
+  body::before {
+    content: '';
+    position: fixed;
+    inset: 0;
+    background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noise'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noise)' opacity='0.03'/%3E%3C/svg%3E");
+    pointer-events: none;
+    z-index: 100;
+    opacity: 0.4;
+  }
+
+  /* HERO */
+  .hero {
+    min-height: 100vh;
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    position: relative;
+    border-bottom: 1px solid var(--border);
+  }
+
+  .hero-left {
+    padding: 80px 60px;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    border-right: 1px solid var(--border);
+    position: relative;
+    overflow: hidden;
+  }
+
+  .hero-left::after {
+    content: '';
+    position: absolute;
+    bottom: -100px;
+    left: -100px;
+    width: 400px;
+    height: 400px;
+    background: radial-gradient(circle, rgba(232,197,71,0.12) 0%, transparent 70%);
+    pointer-events: none;
+  }
+
+  .eyebrow {
+    font-family: 'IBM Plex Mono', monospace;
+    font-size: 0.7rem;
+    letter-spacing: 0.3em;
+    color: var(--accent1);
+    text-transform: uppercase;
+    margin-bottom: 32px;
+    opacity: 0;
+    animation: fadeUp 0.8s forwards 0.2s;
+  }
+
+  .hero-title {
+    font-family: 'Bebas Neue', sans-serif;
+    font-size: clamp(72px, 9vw, 130px);
+    line-height: 0.92;
+    letter-spacing: -0.01em;
+    color: var(--ink);
+    opacity: 0;
+    animation: fadeUp 0.9s forwards 0.4s;
+  }
+
+  .hero-title em {
+    font-family: 'DM Serif Display', serif;
+    font-style: italic;
+    color: var(--accent1);
+    display: block;
+  }
+
+  .hero-desc {
+    margin-top: 48px;
+    font-size: 0.8rem;
+    line-height: 1.9;
+    color: var(--muted);
+    max-width: 420px;
+    opacity: 0;
+    animation: fadeUp 0.9s forwards 0.7s;
+  }
+
+  .hero-right {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    position: relative;
+    overflow: hidden;
+  }
+
+  .orbit-container {
+    position: relative;
+    width: 400px;
+    height: 400px;
+    opacity: 0;
+    animation: fadeIn 1.2s forwards 1s;
+  }
+
+  .orbit-ring {
+    position: absolute;
+    border-radius: 50%;
+    border: 1px solid var(--border);
+    animation: spin linear infinite;
+  }
+
+  .orbit-ring:nth-child(1) { width: 100%; height: 100%; top:0; left:0; animation-duration: 30s; }
+  .orbit-ring:nth-child(2) { width: 70%; height: 70%; top:15%; left:15%; animation-duration: 20s; animation-direction: reverse; border-color: rgba(232,197,71,0.15); }
+  .orbit-ring:nth-child(3) { width: 40%; height: 40%; top:30%; left:30%; animation-duration: 12s; border-color: rgba(78,205,196,0.2); }
+
+  .orbit-dot {
+    position: absolute;
+    border-radius: 50%;
+    background: var(--accent1);
+    box-shadow: 0 0 12px var(--accent1);
+  }
+
+  .orbit-ring:nth-child(1) .orbit-dot { width: 8px; height: 8px; top: -4px; left: 50%; }
+  .orbit-ring:nth-child(2) .orbit-dot { width: 6px; height: 6px; bottom: -3px; left: 30%; background: var(--accent3); box-shadow: 0 0 10px var(--accent3); }
+  .orbit-ring:nth-child(3) .orbit-dot { width: 5px; height: 5px; top: -2.5px; right: 20%; background: var(--accent4); box-shadow: 0 0 8px var(--accent4); }
+
+  .orbit-center {
+    position: absolute;
+    top: 50%; left: 50%;
+    transform: translate(-50%, -50%);
+    width: 80px;
+    height: 80px;
+    border-radius: 50%;
+    background: linear-gradient(135deg, var(--accent1), var(--accent2));
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-family: 'Bebas Neue', sans-serif;
+    font-size: 0.9rem;
+    letter-spacing: 0.1em;
+    color: var(--bg);
+    box-shadow: 0 0 60px rgba(232,197,71,0.3);
+  }
+
+  /* NAV STRIP */
+  .nav-strip {
+    display: flex;
+    border-bottom: 1px solid var(--border);
+    overflow-x: auto;
+  }
+
+  .nav-strip a {
+    padding: 16px 28px;
+    font-size: 0.65rem;
+    letter-spacing: 0.2em;
+    text-transform: uppercase;
+    color: var(--muted);
+    text-decoration: none;
+    border-right: 1px solid var(--border);
+    white-space: nowrap;
+    transition: color 0.2s, background 0.2s;
+  }
+
+  .nav-strip a:hover {
+    color: var(--ink);
+    background: rgba(255,255,255,0.03);
+  }
+
+  /* PATH SECTIONS */
+  .paths-section {
+    padding: 0;
+  }
+
+  .path-row {
+    display: grid;
+    grid-template-columns: 280px 1fr;
+    border-bottom: 1px solid var(--border);
+    min-height: 280px;
+    opacity: 0;
+    transform: translateY(30px);
+    transition: opacity 0.7s, transform 0.7s;
+  }
+
+  .path-row.visible {
+    opacity: 1;
+    transform: translateY(0);
+  }
+
+  .path-row:hover .path-label-block {
+    background: rgba(255,255,255,0.025);
+  }
+
+  .path-label-block {
+    padding: 48px 40px;
+    border-right: 1px solid var(--border);
+    display: flex;
+    flex-direction: column;
+    justify-content: space-between;
+    transition: background 0.3s;
+    position: relative;
+    overflow: hidden;
+  }
+
+  .path-number {
+    font-family: 'Bebas Neue', sans-serif;
+    font-size: 4rem;
+    line-height: 1;
+    color: rgba(240,236,224,0.05);
+    position: absolute;
+    bottom: 20px;
+    right: 20px;
+    pointer-events: none;
+  }
+
+  .path-tag {
+    display: inline-block;
+    font-size: 0.6rem;
+    letter-spacing: 0.25em;
+    text-transform: uppercase;
+    padding: 5px 12px;
+    border-radius: 2px;
+    margin-bottom: 20px;
+    width: fit-content;
+  }
+
+  .path-name {
+    font-family: 'Fraunces', serif;
+    font-size: 1.9rem;
+    font-weight: 600;
+    line-height: 1.15;
+    color: var(--ink);
+  }
+
+  .path-meta {
+    font-size: 0.62rem;
+    color: var(--muted);
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+    margin-top: 16px;
+  }
+
+  .path-content {
+    padding: 48px 56px;
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 40px;
+    align-content: start;
+  }
+
+  .path-desc {
+    grid-column: 1 / -1;
+    font-size: 0.82rem;
+    line-height: 2;
+    color: rgba(240,236,224,0.75);
+    max-width: 680px;
+  }
+
+  .skills-block h4 {
+    font-size: 0.6rem;
+    letter-spacing: 0.25em;
+    text-transform: uppercase;
+    color: var(--muted);
+    margin-bottom: 14px;
+  }
+
+  .skill-pill-list {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px;
+  }
+
+  .skill-pill {
+    font-size: 0.65rem;
+    padding: 5px 14px;
+    border: 1px solid var(--border);
+    border-radius: 30px;
+    color: var(--muted);
+    transition: border-color 0.2s, color 0.2s;
+    white-space: nowrap;
+  }
+
+  .path-row:hover .skill-pill {
+    border-color: rgba(240,236,224,0.2);
+    color: rgba(240,236,224,0.8);
+  }
+
+  .roles-block h4 {
+    font-size: 0.6rem;
+    letter-spacing: 0.25em;
+    text-transform: uppercase;
+    color: var(--muted);
+    margin-bottom: 14px;
+  }
+
+  .role-item {
+    font-size: 0.72rem;
+    padding: 8px 0;
+    border-bottom: 1px solid var(--border);
+    color: rgba(240,236,224,0.65);
+    display: flex;
+    align-items: center;
+    gap: 10px;
+  }
+
+  .role-item::before {
+    content: '→';
+    font-size: 0.65rem;
+    color: var(--muted);
+    transition: color 0.2s, transform 0.2s;
+    display: inline-block;
+  }
+
+  .path-row:hover .role-item::before {
+    transform: translateX(4px);
+  }
+
+  /* Color per path */
+  .path-row[data-path="1"] .path-tag { background: rgba(232,197,71,0.15); color: var(--accent1); }
+  .path-row[data-path="1"] .path-name { color: var(--accent1); }
+  .path-row[data-path="1"] .path-label-block { border-left: 3px solid var(--accent1); }
+
+  .path-row[data-path="2"] .path-tag { background: rgba(255,107,53,0.15); color: var(--accent2); }
+  .path-row[data-path="2"] .path-name { color: var(--accent2); }
+  .path-row[data-path="2"] .path-label-block { border-left: 3px solid var(--accent2); }
+
+  .path-row[data-path="3"] .path-tag { background: rgba(78,205,196,0.15); color: var(--accent3); }
+  .path-row[data-path="3"] .path-name { color: var(--accent3); }
+  .path-row[data-path="3"] .path-label-block { border-left: 3px solid var(--accent3); }
+
+  .path-row[data-path="4"] .path-tag { background: rgba(199,125,255,0.15); color: var(--accent4); }
+  .path-row[data-path="4"] .path-name { color: var(--accent4); }
+  .path-row[data-path="4"] .path-label-block { border-left: 3px solid var(--accent4); }
+
+  .path-row[data-path="5"] .path-tag { background: rgba(255,77,109,0.15); color: var(--accent5); }
+  .path-row[data-path="5"] .path-name { color: var(--accent5); }
+  .path-row[data-path="5"] .path-label-block { border-left: 3px solid var(--accent5); }
+
+  .path-row[data-path="6"] .path-tag { background: rgba(116,184,22,0.15); color: var(--accent6); }
+  .path-row[data-path="6"] .path-name { color: var(--accent6); }
+  .path-row[data-path="6"] .path-label-block { border-left: 3px solid var(--accent6); }
+
+  .path-row[data-path="7"] .path-tag { background: rgba(232,197,71,0.1); color: #e0a05a; }
+  .path-row[data-path="7"] .path-name { color: #e0a05a; }
+  .path-row[data-path="7"] .path-label-block { border-left: 3px solid #e0a05a; }
+
+  .path-row[data-path="8"] .path-tag { background: rgba(100,200,255,0.1); color: #64c8ff; }
+  .path-row[data-path="8"] .path-name { color: #64c8ff; }
+  .path-row[data-path="8"] .path-label-block { border-left: 3px solid #64c8ff; }
+
+  /* DIFFICULTY BAR */
+  .difficulty-bar {
+    display: flex;
+    gap: 4px;
+    margin-top: 12px;
+  }
+
+  .diff-pip {
+    width: 20px;
+    height: 3px;
+    border-radius: 2px;
+    background: var(--border);
+  }
+
+  .diff-pip.filled { background: currentColor; }
+
+  /* FOOTER */
+  .footer {
+    padding: 60px;
+    display: grid;
+    grid-template-columns: 1fr 1fr 1fr;
+    gap: 40px;
+    border-top: 1px solid var(--border);
+  }
+
+  .footer-block h3 {
+    font-family: 'Fraunces', serif;
+    font-size: 1.1rem;
+    margin-bottom: 16px;
+    color: var(--ink);
+  }
+
+  .footer-block p {
+    font-size: 0.72rem;
+    line-height: 1.9;
+    color: var(--muted);
+  }
+
+  .cta-bar {
+    grid-column: 1 / -1;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding-top: 40px;
+    border-top: 1px solid var(--border);
+    margin-top: 20px;
+  }
+
+  .cta-text {
+    font-family: 'Bebas Neue', sans-serif;
+    font-size: 2.5rem;
+    letter-spacing: 0.05em;
+    color: var(--ink);
+  }
+
+  .cta-text span { color: var(--accent1); }
+
+  .marquee-wrap {
+    overflow: hidden;
+    border-top: 1px solid var(--border);
+    border-bottom: 1px solid var(--border);
+    padding: 14px 0;
+  }
+
+  .marquee {
+    display: flex;
+    animation: marquee 25s linear infinite;
+    width: max-content;
+  }
+
+  .marquee-item {
+    font-size: 0.65rem;
+    letter-spacing: 0.3em;
+    text-transform: uppercase;
+    color: var(--muted);
+    padding: 0 40px;
+    white-space: nowrap;
+  }
+
+  .marquee-item span {
+    color: var(--accent1);
+    margin-right: 20px;
+  }
+
+  @keyframes fadeUp {
+    from { opacity: 0; transform: translateY(24px); }
+    to { opacity: 1; transform: translateY(0); }
+  }
+
+  @keyframes fadeIn {
+    to { opacity: 1; }
+  }
+
+  @keyframes spin {
+    to { transform: rotate(360deg); }
+  }
+
+  @keyframes marquee {
+    to { transform: translateX(-50%); }
+  }
+
+  /* Responsive */
+  @media (max-width: 900px) {
+    .hero { grid-template-columns: 1fr; }
+    .hero-right { display: none; }
+    .path-row { grid-template-columns: 1fr; }
+    .path-label-block { border-right: none; border-bottom: 1px solid var(--border); }
+    .path-content { grid-template-columns: 1fr; padding: 32px; }
+    .footer { grid-template-columns: 1fr; }
+  }
+</style>
+</head>
+<body>
+
+<!-- HERO -->
+<section class="hero">
+  <div class="hero-left">
+    <div class="eyebrow">// The Human Side of Machine Intelligence</div>
+    <h1 class="hero-title">
+      YOUR PATH
+      <em>in AI/ML</em>
+    </h1>
+    <p class="hero-desc">
+      Artificial intelligence doesn't build itself. Every model trained, every pipeline deployed, 
+      every agent released into the world — a human made a decision. Here are the disciplines 
+      shaping how humans and machines work together.
+    </p>
+  </div>
+  <div class="hero-right">
+    <div class="orbit-container">
+      <div class="orbit-ring"><div class="orbit-dot"></div></div>
+      <div class="orbit-ring"><div class="orbit-dot"></div></div>
+      <div class="orbit-ring"><div class="orbit-dot"></div></div>
+      <div class="orbit-center">AI/ML</div>
+    </div>
+  </div>
+</section>
+
+<!-- MARQUEE -->
+<div class="marquee-wrap">
+  <div class="marquee">
+    <div class="marquee-item"><span>◆</span> Prompting</div>
+    <div class="marquee-item"><span>◆</span> MLOps</div>
+    <div class="marquee-item"><span>◆</span> Model Creation</div>
+    <div class="marquee-item"><span>◆</span> Agentic Architectures</div>
+    <div class="marquee-item"><span>◆</span> Workflow Integration</div>
+    <div class="marquee-item"><span>◆</span> AI Safety</div>
+    <div class="marquee-item"><span>◆</span> Data Engineering</div>
+    <div class="marquee-item"><span>◆</span> AI Product Design</div>
+    <!-- duplicate for seamless loop -->
+    <div class="marquee-item"><span>◆</span> Prompting</div>
+    <div class="marquee-item"><span>◆</span> MLOps</div>
+    <div class="marquee-item"><span>◆</span> Model Creation</div>
+    <div class="marquee-item"><span>◆</span> Agentic Architectures</div>
+    <div class="marquee-item"><span>◆</span> Workflow Integration</div>
+    <div class="marquee-item"><span>◆</span> AI Safety</div>
+    <div class="marquee-item"><span>◆</span> Data Engineering</div>
+    <div class="marquee-item"><span>◆</span> AI Product Design</div>
+  </div>
+</div>
+
+<!-- NAV -->
+<nav class="nav-strip">
+  <a href="#prompting">Prompting</a>
+  <a href="#mlops">MLOps</a>
+  <a href="#model-creation">Model Creation</a>
+  <a href="#agentic">Agentic AI</a>
+  <a href="#workflow">Workflow Integration</a>
+  <a href="#data">Data Engineering</a>
+  <a href="#safety">AI Safety</a>
+  <a href="#product">AI Product</a>
+</nav>
+
+<!-- PATH SECTIONS -->
+<section class="paths-section">
+
+  <!-- 01 PROMPTING -->
+  <div class="path-row" data-path="1" id="prompting">
+    <div class="path-label-block">
+      <div>
+        <div class="path-tag">Path 01</div>
+        <div class="path-name">Prompt<br>Engineering</div>
+        <div class="path-meta">Entry → Expert</div>
+        <div class="difficulty-bar" style="color: var(--accent1);">
+          <div class="diff-pip filled"></div>
+          <div class="diff-pip filled"></div>
+          <div class="diff-pip filled"></div>
+          <div class="diff-pip"></div>
+          <div class="diff-pip"></div>
+        </div>
+      </div>
+      <div class="path-number">01</div>
+    </div>
+    <div class="path-content">
+      <p class="path-desc">
+        The art of communicating with intelligence. Prompt engineers craft the inputs that unlock model capabilities — from zero-shot queries to complex multi-shot chains. This path sits at the intersection of linguistics, logic, and deep domain expertise. It's often the fastest entry into AI work and requires no coding background to begin.
+      </p>
+      <div class="skills-block">
+        <h4>Core Skills</h4>
+        <div class="skill-pill-list">
+          <div class="skill-pill">Chain-of-Thought</div>
+          <div class="skill-pill">Few-Shot Design</div>
+          <div class="skill-pill">RAG Prompting</div>
+          <div class="skill-pill">System Prompts</div>
+          <div class="skill-pill">Structured Outputs</div>
+          <div class="skill-pill">Evaluation Frameworks</div>
+          <div class="skill-pill">Red-teaming</div>
+        </div>
+      </div>
+      <div class="roles-block">
+        <h4>Roles</h4>
+        <div class="role-item">Prompt Engineer</div>
+        <div class="role-item">AI Content Strategist</div>
+        <div class="role-item">LLM Quality Evaluator</div>
+        <div class="role-item">Conversational AI Designer</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- 02 MLOPS -->
+  <div class="path-row" data-path="2" id="mlops">
+    <div class="path-label-block">
+      <div>
+        <div class="path-tag">Path 02</div>
+        <div class="path-name">MLOps &<br>Infrastructure</div>
+        <div class="path-meta">Mid → Senior</div>
+        <div class="difficulty-bar" style="color: var(--accent2);">
+          <div class="diff-pip filled"></div>
+          <div class="diff-pip filled"></div>
+          <div class="diff-pip filled"></div>
+          <div class="diff-pip filled"></div>
+          <div class="diff-pip"></div>
+        </div>
+      </div>
+      <div class="path-number">02</div>
+    </div>
+    <div class="path-content">
+      <p class="path-desc">
+        Where models meet the real world. MLOps practitioners bridge the gap between research notebooks and production systems — automating training pipelines, managing model versioning, monitoring drift, and ensuring models deliver value at scale. It's DevOps, but for living, breathing AI systems.
+      </p>
+      <div class="skills-block">
+        <h4>Core Skills</h4>
+        <div class="skill-pill-list">
+          <div class="skill-pill">CI/CD for ML</div>
+          <div class="skill-pill">Kubeflow / Airflow</div>
+          <div class="skill-pill">Model Monitoring</div>
+          <div class="skill-pill">Feature Stores</div>
+          <div class="skill-pill">Docker / Kubernetes</div>
+          <div class="skill-pill">A/B Testing</div>
+          <div class="skill-pill">Data Versioning</div>
+          <div class="skill-pill">MLflow / W&B</div>
+        </div>
+      </div>
+      <div class="roles-block">
+        <h4>Roles</h4>
+        <div class="role-item">MLOps Engineer</div>
+        <div class="role-item">ML Platform Engineer</div>
+        <div class="role-item">AI Infrastructure Architect</div>
+        <div class="role-item">Data Platform Lead</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- 03 MODEL CREATION -->
+  <div class="path-row" data-path="3" id="model-creation">
+    <div class="path-label-block">
+      <div>
+        <div class="path-tag">Path 03</div>
+        <div class="path-name">Model<br>Creation</div>
+        <div class="path-meta">Senior → Staff</div>
+        <div class="difficulty-bar" style="color: var(--accent3);">
+          <div class="diff-pip filled"></div>
+          <div class="diff-pip filled"></div>
+          <div class="diff-pip filled"></div>
+          <div class="diff-pip filled"></div>
+          <div class="diff-pip filled"></div>
+        </div>
+      </div>
+      <div class="path-number">03</div>
+    </div>
+    <div class="path-content">
+      <p class="path-desc">
+        Building intelligence from the ground up. This path demands deep mathematical fluency, mastery of neural architecture design, and hands-on experience with large-scale distributed training. Whether fine-tuning a foundation model or designing one from scratch, this is where the fundamental research happens — and where breakthroughs are born.
+      </p>
+      <div class="skills-block">
+        <h4>Core Skills</h4>
+        <div class="skill-pill-list">
+          <div class="skill-pill">Transformer Architecture</div>
+          <div class="skill-pill">PyTorch / JAX</div>
+          <div class="skill-pill">Distributed Training</div>
+          <div class="skill-pill">RLHF / RLAIF</div>
+          <div class="skill-pill">Fine-tuning (LoRA, QLoRA)</div>
+          <div class="skill-pill">Hyperparameter Optimization</div>
+          <div class="skill-pill">Evaluation Design</div>
+          <div class="skill-pill">GPU Cluster Management</div>
+        </div>
+      </div>
+      <div class="roles-block">
+        <h4>Roles</h4>
+        <div class="role-item">ML Research Scientist</div>
+        <div class="role-item">Deep Learning Engineer</div>
+        <div class="role-item">Foundation Model Researcher</div>
+        <div class="role-item">AI Research Lead</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- 04 AGENTIC ARCHITECTURES -->
+  <div class="path-row" data-path="4" id="agentic">
+    <div class="path-label-block">
+      <div>
+        <div class="path-tag">Path 04</div>
+        <div class="path-name">Agentic<br>Architectures</div>
+        <div class="path-meta">Mid → Staff</div>
+        <div class="difficulty-bar" style="color: var(--accent4);">
+          <div class="diff-pip filled"></div>
+          <div class="diff-pip filled"></div>
+          <div class="diff-pip filled"></div>
+          <div class="diff-pip filled"></div>
+          <div class="diff-pip"></div>
+        </div>
+      </div>
+      <div class="path-number">04</div>
+    </div>
+    <div class="path-content">
+      <p class="path-desc">
+        Designing systems where AI acts autonomously. Agentic architects build networks of models that plan, use tools, delegate subtasks, and reflect on their own outputs. This is one of the fastest-moving frontiers in AI — blending system design, reasoning engineering, and real-world safety constraints into coherent, capable systems.
+      </p>
+      <div class="skills-block">
+        <h4>Core Skills</h4>
+        <div class="skill-pill-list">
+          <div class="skill-pill">Multi-Agent Systems</div>
+          <div class="skill-pill">LangGraph / AutoGen</div>
+          <div class="skill-pill">Tool Use & APIs</div>
+          <div class="skill-pill">Memory Systems</div>
+          <div class="skill-pill">ReAct / Reflexion</div>
+          <div class="skill-pill">Orchestration Logic</div>
+          <div class="skill-pill">Task Decomposition</div>
+          <div class="skill-pill">Guardrails Design</div>
+        </div>
+      </div>
+      <div class="roles-block">
+        <h4>Roles</h4>
+        <div class="role-item">AI Agent Engineer</div>
+        <div class="role-item">Autonomous Systems Architect</div>
+        <div class="role-item">LLM Systems Engineer</div>
+        <div class="role-item">AI Orchestration Lead</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- 05 WORKFLOW INTEGRATION -->
+  <div class="path-row" data-path="5" id="workflow">
+    <div class="path-label-block">
+      <div>
+        <div class="path-tag">Path 05</div>
+        <div class="path-name">Workflow<br>Integration</div>
+        <div class="path-meta">Entry → Senior</div>
+        <div class="difficulty-bar" style="color: var(--accent5);">
+          <div class="diff-pip filled"></div>
+          <div class="diff-pip filled"></div>
+          <div class="diff-pip filled"></div>
+          <div class="diff-pip"></div>
+          <div class="diff-pip"></div>
+        </div>
+      </div>
+      <div class="path-number">05</div>
+    </div>
+    <div class="path-content">
+      <p class="path-desc">
+        Making AI useful inside existing organizations. Workflow integrators embed AI capabilities into the tools people already use — CRMs, ERPs, dev environments, communication platforms. This path is less about building models and more about making them stick: change management, API wiring, and identifying the highest-value automation opportunities.
+      </p>
+      <div class="skills-block">
+        <h4>Core Skills</h4>
+        <div class="skill-pill-list">
+          <div class="skill-pill">API Integration</div>
+          <div class="skill-pill">No-code / Low-code AI</div>
+          <div class="skill-pill">Zapier / Make / n8n</div>
+          <div class="skill-pill">Business Process Analysis</div>
+          <div class="skill-pill">AI UX Patterns</div>
+          <div class="skill-pill">ROI Measurement</div>
+          <div class="skill-pill">Change Management</div>
+        </div>
+      </div>
+      <div class="roles-block">
+        <h4>Roles</h4>
+        <div class="role-item">AI Implementation Consultant</div>
+        <div class="role-item">Automation Engineer</div>
+        <div class="role-item">AI Product Manager</div>
+        <div class="role-item">Digital Transformation Lead</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- 06 DATA ENGINEERING -->
+  <div class="path-row" data-path="6" id="data">
+    <div class="path-label-block">
+      <div>
+        <div class="path-tag">Path 06</div>
+        <div class="path-name">Data<br>Engineering</div>
+        <div class="path-meta">Mid → Senior</div>
+        <div class="difficulty-bar" style="color: var(--accent6);">
+          <div class="diff-pip filled"></div>
+          <div class="diff-pip filled"></div>
+          <div class="diff-pip filled"></div>
+          <div class="diff-pip filled"></div>
+          <div class="diff-pip"></div>
+        </div>
+      </div>
+      <div class="path-number">06</div>
+    </div>
+    <div class="path-content">
+      <p class="path-desc">
+        The unsung foundation of every AI system. Data engineers curate, pipeline, and govern the information that models learn from. High-quality datasets are the single biggest lever on model quality — and the people who build them are increasingly recognized as core contributors to AI capability, not just support roles.
+      </p>
+      <div class="skills-block">
+        <h4>Core Skills</h4>
+        <div class="skill-pill-list">
+          <div class="skill-pill">Data Pipeline Design</div>
+          <div class="skill-pill">Dataset Curation</div>
+          <div class="skill-pill">RLHF Annotation</div>
+          <div class="skill-pill">Spark / dbt</div>
+          <div class="skill-pill">Data Governance</div>
+          <div class="skill-pill">Synthetic Data Gen</div>
+          <div class="skill-pill">Schema Design</div>
+        </div>
+      </div>
+      <div class="roles-block">
+        <h4>Roles</h4>
+        <div class="role-item">AI Data Engineer</div>
+        <div class="role-item">Dataset Lead</div>
+        <div class="role-item">Data Labeling Architect</div>
+        <div class="role-item">Knowledge Graph Engineer</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- 07 AI SAFETY & ALIGNMENT -->
+  <div class="path-row" data-path="7" id="safety">
+    <div class="path-label-block">
+      <div>
+        <div class="path-tag">Path 07</div>
+        <div class="path-name">AI Safety &<br>Alignment</div>
+        <div class="path-meta">Research Track</div>
+        <div class="difficulty-bar" style="color: #e0a05a;">
+          <div class="diff-pip filled"></div>
+          <div class="diff-pip filled"></div>
+          <div class="diff-pip filled"></div>
+          <div class="diff-pip filled"></div>
+          <div class="diff-pip filled"></div>
+        </div>
+      </div>
+      <div class="path-number">07</div>
+    </div>
+    <div class="path-content">
+      <p class="path-desc">
+        Ensuring AI does what we actually want. Safety researchers work on interpretability, robustness, and alignment — the hard problem of making powerful models reliably helpful and harmless. This path combines deep technical research with philosophical rigor, and the stakes are as high as they get in any field of human endeavor.
+      </p>
+      <div class="skills-block">
+        <h4>Core Skills</h4>
+        <div class="skill-pill-list">
+          <div class="skill-pill">Mechanistic Interpretability</div>
+          <div class="skill-pill">Red-teaming</div>
+          <div class="skill-pill">Constitutional AI</div>
+          <div class="skill-pill">Robustness Testing</div>
+          <div class="skill-pill">Value Alignment</div>
+          <div class="skill-pill">Policy & Governance</div>
+          <div class="skill-pill">Formal Verification</div>
+        </div>
+      </div>
+      <div class="roles-block">
+        <h4>Roles</h4>
+        <div class="role-item">AI Safety Researcher</div>
+        <div class="role-item">Alignment Scientist</div>
+        <div class="role-item">AI Policy Analyst</div>
+        <div class="role-item">Trust & Safety Engineer</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- 08 AI PRODUCT DESIGN -->
+  <div class="path-row" data-path="8" id="product">
+    <div class="path-label-block">
+      <div>
+        <div class="path-tag">Path 08</div>
+        <div class="path-name">AI Product<br>Design</div>
+        <div class="path-meta">Mid → Director</div>
+        <div class="difficulty-bar" style="color: #64c8ff;">
+          <div class="diff-pip filled"></div>
+          <div class="diff-pip filled"></div>
+          <div class="diff-pip filled"></div>
+          <div class="diff-pip"></div>
+          <div class="diff-pip"></div>
+        </div>
+      </div>
+      <div class="path-number">08</div>
+    </div>
+    <div class="path-content">
+      <p class="path-desc">
+        Shaping how humans experience AI. AI product designers and managers navigate the unique challenge of designing around probabilistic, non-deterministic systems. They decide what models should do, how interactions should feel, and what constraints to bake in. As AI becomes ubiquitous, this is where user trust is won or lost.
+      </p>
+      <div class="skills-block">
+        <h4>Core Skills</h4>
+        <div class="skill-pill-list">
+          <div class="skill-pill">AI UX Principles</div>
+          <div class="skill-pill">Product Strategy</div>
+          <div class="skill-pill">User Research</div>
+          <div class="skill-pill">Capability Scoping</div>
+          <div class="skill-pill">Failure Mode Design</div>
+          <div class="skill-pill">Eval Frameworks</div>
+          <div class="skill-pill">Ethical Foresight</div>
+        </div>
+      </div>
+      <div class="roles-block">
+        <h4>Roles</h4>
+        <div class="role-item">AI Product Manager</div>
+        <div class="role-item">Conversational UX Designer</div>
+        <div class="role-item">AI Experience Lead</div>
+        <div class="role-item">Head of AI Products</div>
+      </div>
+    </div>
+  </div>
+
+</section>
+
+<!-- FOOTER -->
+<footer class="footer">
+  <div class="footer-block">
+    <h3>Where to Begin</h3>
+    <p>No single path is more "correct" than another. The best starting point is the intersection of your existing skills and genuine curiosity. Prompting and workflow integration have the lowest barrier; model creation and safety research demand years of specialization.</p>
+  </div>
+  <div class="footer-block">
+    <h3>Paths Overlap</h3>
+    <p>The most effective AI practitioners combine 2–3 paths. An MLOps engineer who understands agentic systems. A prompt engineer who can read a research paper. A data engineer who thinks about alignment. Breadth compounds with depth.</p>
+  </div>
+  <div class="footer-block">
+    <h3>The Field Moves</h3>
+    <p>What's cutting-edge today becomes standard infrastructure in 18 months. The meta-skill across all paths is learning velocity — the ability to absorb new frameworks, concepts, and capabilities faster than the field evolves.</p>
+  </div>
+  <div class="cta-bar">
+    <div class="cta-text">Pick a path. <span>Start today.</span></div>
+    <div style="font-size: 0.65rem; color: var(--muted); letter-spacing: 0.15em; text-align: right;">
+      8 HUMAN PATHS<br>
+      ACROSS AI/ML<br>
+      © 2025
+    </div>
+  </div>
+</footer>
+
+<script>
+  // Intersection Observer for scroll animations
+  const observer = new IntersectionObserver((entries) => {
+    entries.forEach((entry, i) => {
+      if (entry.isIntersecting) {
+        setTimeout(() => {
+          entry.target.classList.add('visible');
+        }, 0);
+        observer.unobserve(entry.target);
+      }
+    });
+  }, { threshold: 0.1 });
+
+  document.querySelectorAll('.path-row').forEach(row => observer.observe(row));
+
+  // Parallax glow on hero
+  document.addEventListener('mousemove', (e) => {
+    const x = e.clientX / window.innerWidth;
+    const y = e.clientY / window.innerHeight;
+    const hero = document.querySelector('.hero-left');
+    if (hero) {
+      hero.style.setProperty('--mx', x * 100 + '%');
+      hero.style.setProperty('--my', y * 100 + '%');
+    }
+  });
+</script>
+</body>
+</html>

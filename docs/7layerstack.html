@@ -1,0 +1,1149 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>MLOps on AWS · Open Source Stack</title>
+<link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@700;900&family=IBM+Plex+Mono:wght@300;400;500;600&family=IBM+Plex+Sans:ital,wght@0,300;0,400;0,600;1,300&display=swap" rel="stylesheet">
+<style>
+:root {
+  --bg: #faf7f2;
+  --bg2: #f3ede3;
+  --paper: #fffdf9;
+  --ink: #1a1208;
+  --ink2: #3d2e18;
+  --ink3: #7a6548;
+  --ink4: #b8a38a;
+  --aws: #e8650a;
+  --aws-light: #fff0e6;
+  --aws-mid: #ffd6b3;
+  --oss: #1a7a4a;
+  --oss-light: #e6f5ed;
+  --oss-mid: #a8dfc0;
+  --border: #d9cebc;
+  --border-strong: #b8a88a;
+  --stage1: #c0392b;
+  --stage2: #d35400;
+  --stage3: #e8650a;
+  --stage4: #d4a017;
+  --stage5: #27ae60;
+  --stage6: #1a6ba0;
+  --stage7: #7b3fa0;
+  --shadow: rgba(26,18,8,0.08);
+}
+
+* { box-sizing: border-box; margin: 0; padding: 0; }
+html { scroll-behavior: smooth; }
+
+body {
+  font-family: 'IBM Plex Mono', monospace;
+  background: var(--bg);
+  color: var(--ink);
+  overflow-x: hidden;
+}
+
+/* ── HEADER ─────────────────────────────────── */
+header {
+  background: var(--ink);
+  color: var(--bg);
+  padding: 0;
+  position: relative;
+  overflow: hidden;
+}
+
+.header-grid {
+  position: absolute;
+  inset: 0;
+  background-image:
+    linear-gradient(rgba(232,101,10,0.15) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(232,101,10,0.15) 1px, transparent 1px);
+  background-size: 40px 40px;
+}
+
+.header-inner {
+  position: relative;
+  z-index: 1;
+  padding: 70px 80px 60px;
+  max-width: 1400px;
+  margin: 0 auto;
+}
+
+.header-eyebrow {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  margin-bottom: 28px;
+  font-size: 11px;
+  letter-spacing: 3px;
+  text-transform: uppercase;
+  color: var(--aws);
+}
+.header-eyebrow::before {
+  content: '';
+  width: 32px;
+  height: 1px;
+  background: var(--aws);
+}
+
+.header-title {
+  font-family: 'Playfair Display', serif;
+  font-weight: 900;
+  font-size: clamp(52px, 7vw, 90px);
+  line-height: 0.92;
+  letter-spacing: -2px;
+  margin-bottom: 32px;
+}
+
+.header-title .line-aws { color: var(--aws); }
+.header-title .line-dim { color: rgba(250,247,242,0.35); }
+
+.header-sub {
+  font-family: 'IBM Plex Sans', sans-serif;
+  font-size: 16px;
+  font-weight: 300;
+  color: rgba(250,247,242,0.6);
+  max-width: 560px;
+  line-height: 1.7;
+  margin-bottom: 48px;
+}
+
+.header-badges {
+  display: flex;
+  gap: 12px;
+  flex-wrap: wrap;
+}
+
+.hbadge {
+  padding: 8px 16px;
+  border-radius: 3px;
+  font-size: 11px;
+  letter-spacing: 1px;
+  text-transform: uppercase;
+  font-weight: 600;
+}
+.hbadge-aws { background: var(--aws); color: white; }
+.hbadge-oss { background: var(--oss); color: white; }
+.hbadge-free { background: rgba(250,247,242,0.1); color: rgba(250,247,242,0.7); border: 1px solid rgba(250,247,242,0.2); }
+
+/* ── LEGEND ─────────────────────────────────── */
+.legend-bar {
+  background: var(--ink2);
+  padding: 16px 80px;
+  display: flex;
+  align-items: center;
+  gap: 32px;
+  font-size: 11px;
+  letter-spacing: 1px;
+}
+.legend-item {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  color: rgba(250,247,242,0.6);
+}
+.legend-dot {
+  width: 10px;
+  height: 10px;
+  border-radius: 2px;
+  flex-shrink: 0;
+}
+.legend-dot-aws { background: var(--aws); }
+.legend-dot-oss { background: var(--oss); }
+
+/* ── MAIN ─────────────────────────────────── */
+main {
+  max-width: 1400px;
+  margin: 0 auto;
+  padding: 0 80px 80px;
+}
+
+/* ── STAGE BLOCK ─────────────────────────────── */
+.stage {
+  margin-top: 48px;
+  background: var(--paper);
+  border: 1px solid var(--border);
+  box-shadow: 0 2px 16px var(--shadow);
+  position: relative;
+  overflow: hidden;
+  opacity: 0;
+  transform: translateY(20px);
+  transition: opacity 0.5s ease, transform 0.5s ease;
+}
+.stage.visible {
+  opacity: 1;
+  transform: translateY(0);
+}
+.stage:hover {
+  box-shadow: 0 8px 40px var(--shadow);
+}
+
+.stage-accent {
+  position: absolute;
+  left: 0; top: 0; bottom: 0;
+  width: 4px;
+}
+
+.stage-header {
+  display: grid;
+  grid-template-columns: 280px 1fr;
+  border-bottom: 1px solid var(--border);
+}
+
+.stage-num-block {
+  padding: 28px 32px;
+  border-right: 1px solid var(--border);
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  background: var(--bg2);
+}
+
+.stage-number {
+  font-size: 11px;
+  letter-spacing: 3px;
+  text-transform: uppercase;
+  color: var(--ink4);
+  margin-bottom: 6px;
+}
+
+.stage-name {
+  font-family: 'Playfair Display', serif;
+  font-weight: 700;
+  font-size: 22px;
+  letter-spacing: -0.5px;
+  color: var(--ink);
+  line-height: 1.2;
+}
+
+.stage-tagline {
+  margin-top: 8px;
+  font-size: 11px;
+  color: var(--ink3);
+  font-family: 'IBM Plex Sans', sans-serif;
+  font-style: italic;
+  line-height: 1.5;
+}
+
+.stage-meta {
+  padding: 20px 32px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 20px;
+}
+
+.stage-desc {
+  font-family: 'IBM Plex Sans', sans-serif;
+  font-size: 13px;
+  color: var(--ink3);
+  line-height: 1.7;
+  font-weight: 300;
+  max-width: 500px;
+}
+
+.stage-count {
+  font-size: 11px;
+  color: var(--ink4);
+  white-space: nowrap;
+  letter-spacing: 1px;
+  text-transform: uppercase;
+}
+
+/* ── TOOLS SECTION ─────────────────────────────── */
+.stage-body {
+  padding: 32px 32px 36px 32px;
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 28px;
+}
+
+.tool-group {
+  display: flex;
+  flex-direction: column;
+  gap: 0;
+}
+
+.tool-group-label {
+  font-size: 10px;
+  letter-spacing: 3px;
+  text-transform: uppercase;
+  padding: 8px 0 12px;
+  border-bottom: 1px solid var(--border);
+  margin-bottom: 14px;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.group-badge {
+  width: 8px;
+  height: 8px;
+  border-radius: 1px;
+}
+.group-badge-aws { background: var(--aws); }
+.group-badge-oss { background: var(--oss); }
+
+.tool-group-label.aws-label { color: var(--aws); }
+.tool-group-label.oss-label { color: var(--oss); }
+
+.tool-list {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.tool-item {
+  display: flex;
+  gap: 12px;
+  align-items: flex-start;
+  padding: 12px 14px;
+  border-radius: 4px;
+  transition: background 0.2s;
+  border: 1px solid transparent;
+}
+.tool-item:hover {
+  border-color: var(--border);
+  background: var(--bg2);
+}
+
+.tool-icon {
+  width: 28px;
+  height: 28px;
+  border-radius: 4px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 12px;
+  flex-shrink: 0;
+  font-weight: 600;
+  font-family: 'IBM Plex Mono', monospace;
+}
+.tool-icon-aws { background: var(--aws-light); color: var(--aws); border: 1px solid var(--aws-mid); }
+.tool-icon-oss { background: var(--oss-light); color: var(--oss); border: 1px solid var(--oss-mid); }
+
+.tool-text {}
+.tool-name {
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--ink);
+  margin-bottom: 2px;
+  letter-spacing: -0.2px;
+}
+.tool-desc {
+  font-size: 11px;
+  color: var(--ink3);
+  font-family: 'IBM Plex Sans', sans-serif;
+  font-weight: 300;
+  line-height: 1.5;
+}
+.tool-license {
+  font-size: 9px;
+  letter-spacing: 1px;
+  text-transform: uppercase;
+  margin-top: 4px;
+  padding: 2px 6px;
+  border-radius: 2px;
+  display: inline-block;
+}
+.lic-apache { background: #e8f5e9; color: #2e7d32; }
+.lic-mit { background: #e3f2fd; color: #1565c0; }
+.lic-lgpl { background: #f3e5f5; color: #6a1b9a; }
+.lic-apache2 { background: #fff3e0; color: #e65100; }
+.lic-managed { background: var(--aws-light); color: var(--aws); }
+.lic-bsd { background: #fce4ec; color: #880e4f; }
+
+/* ── CONNECTOR ─────────────────────────────── */
+.connector {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 4px 0;
+  gap: 12px;
+  color: var(--ink4);
+  font-size: 10px;
+  letter-spacing: 2px;
+  text-transform: uppercase;
+}
+.connector-line {
+  flex: 1;
+  height: 1px;
+  background: repeating-linear-gradient(90deg, var(--border) 0, var(--border) 6px, transparent 6px, transparent 12px);
+}
+.connector-arrow {
+  width: 0;
+  height: 0;
+  border-left: 6px solid transparent;
+  border-right: 6px solid transparent;
+  border-top: 8px solid var(--border-strong);
+}
+
+/* ── FOOTER ─────────────────────────────── */
+.doc-footer {
+  margin-top: 64px;
+  padding: 40px 0;
+  border-top: 1px solid var(--border);
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-end;
+}
+.footer-title {
+  font-family: 'Playfair Display', serif;
+  font-size: 28px;
+  font-weight: 700;
+  color: var(--ink);
+  letter-spacing: -1px;
+}
+.footer-note {
+  font-size: 11px;
+  color: var(--ink4);
+  text-align: right;
+  line-height: 2;
+}
+
+/* ── SUMMARY STRIP ─────────────────────────── */
+.summary-strip {
+  background: var(--ink);
+  color: var(--bg);
+  padding: 40px 80px;
+  display: grid;
+  grid-template-columns: repeat(7, 1fr);
+  gap: 1px;
+  background-color: var(--border);
+}
+.summary-cell {
+  background: var(--ink);
+  padding: 24px 20px;
+  text-align: center;
+  transition: background 0.2s;
+  cursor: default;
+}
+.summary-cell:hover { background: var(--ink2); }
+.summary-cell-num {
+  font-family: 'Playfair Display', serif;
+  font-size: 11px;
+  color: var(--ink4);
+  margin-bottom: 6px;
+  letter-spacing: 2px;
+}
+.summary-cell-name {
+  font-size: 11px;
+  font-weight: 600;
+  letter-spacing: 0.5px;
+  line-height: 1.4;
+}
+
+/* stage colors for summary */
+.sc1 .summary-cell-name { color: var(--stage1); }
+.sc2 .summary-cell-name { color: var(--stage2); }
+.sc3 .summary-cell-name { color: var(--stage3); }
+.sc4 .summary-cell-name { color: var(--stage4); }
+.sc5 .summary-cell-name { color: var(--stage5); }
+.sc6 .summary-cell-name { color: var(--stage6); }
+.sc7 .summary-cell-name { color: var(--stage7); }
+
+@media (max-width: 1000px) {
+  .header-inner, .legend-bar, main { padding-left: 24px; padding-right: 24px; }
+  .stage-body { grid-template-columns: 1fr; }
+  .stage-header { grid-template-columns: 1fr; }
+  .stage-num-block { border-right: none; border-bottom: 1px solid var(--border); }
+  .summary-strip { grid-template-columns: repeat(4, 1fr); }
+  .doc-footer { flex-direction: column; gap: 16px; }
+  .footer-note { text-align: left; }
+}
+</style>
+</head>
+<body>
+
+<!-- ── HEADER ── -->
+<header>
+  <div class="header-grid"></div>
+  <div class="header-inner">
+    <div class="header-eyebrow">MLOps Reference Architecture · 2025</div>
+    <h1 class="header-title">
+      <span class="line-aws">7-Stage</span><br>
+      MLOps Stack<br>
+      <span class="line-dim">AWS + Open Source</span>
+    </h1>
+    <p class="header-sub">
+      A complete, production-ready MLOps architecture using AWS managed services and free, unlicensed open-source tools — from raw data ingestion to production monitoring.
+    </p>
+    <div class="header-badges">
+      <span class="hbadge hbadge-aws">&#9632; AWS Managed</span>
+      <span class="hbadge hbadge-oss">&#9632; Open Source / Free</span>
+      <span class="hbadge hbadge-free">Zero Licensing Fees</span>
+    </div>
+  </div>
+</header>
+
+<!-- ── LEGEND BAR ── -->
+<div class="legend-bar">
+  <div class="legend-item"><span class="legend-dot legend-dot-aws"></span> AWS Managed Service (pay-as-you-go infrastructure, no license)</div>
+  <div class="legend-item"><span class="legend-dot legend-dot-oss"></span> Open Source (Apache 2.0 / MIT / BSD — fully free)</div>
+</div>
+
+<!-- ── STAGE SUMMARY STRIP ── -->
+<div class="summary-strip">
+  <div class="summary-cell sc1"><div class="summary-cell-num">01</div><div class="summary-cell-name">Data<br>Engineering</div></div>
+  <div class="summary-cell sc2"><div class="summary-cell-num">02</div><div class="summary-cell-name">Feature<br>Store</div></div>
+  <div class="summary-cell sc3"><div class="summary-cell-num">03</div><div class="summary-cell-name">Experi&shy;mentation</div></div>
+  <div class="summary-cell sc4"><div class="summary-cell-num">04</div><div class="summary-cell-name">Training<br>&amp; Compute</div></div>
+  <div class="summary-cell sc5"><div class="summary-cell-num">05</div><div class="summary-cell-name">Model<br>Registry</div></div>
+  <div class="summary-cell sc6"><div class="summary-cell-num">06</div><div class="summary-cell-name">Deployment<br>&amp; Serving</div></div>
+  <div class="summary-cell sc7"><div class="summary-cell-num">07</div><div class="summary-cell-name">Monitoring<br>&amp; Observ.</div></div>
+</div>
+
+<!-- ── MAIN CONTENT ── -->
+<main>
+
+  <!-- ═══════════════════════════════════════════ -->
+  <!-- STAGE 1: DATA ENGINEERING                   -->
+  <!-- ═══════════════════════════════════════════ -->
+  <div class="stage" id="s1">
+    <div class="stage-accent" style="background:var(--stage1)"></div>
+    <div class="stage-header">
+      <div class="stage-num-block">
+        <div class="stage-number">Stage 01 · Foundation</div>
+        <div class="stage-name">Data<br>Engineering</div>
+        <div class="stage-tagline">Ingest, store, version, validate, and transform raw data into ML-ready datasets</div>
+      </div>
+      <div class="stage-meta">
+        <p class="stage-desc">The bedrock of every ML project. Raw data from databases, APIs, streams, and files is ingested into a data lake, transformed via pipelines, validated for quality, and versioned for reproducibility. Nothing downstream works without this being solid.</p>
+        <div class="stage-count">4 AWS · 5 OSS</div>
+      </div>
+    </div>
+    <div class="stage-body">
+
+      <!-- AWS Tools -->
+      <div class="tool-group">
+        <div class="tool-group-label aws-label"><span class="group-badge group-badge-aws"></span>AWS Services</div>
+        <div class="tool-list">
+          <div class="tool-item">
+            <div class="tool-icon tool-icon-aws">S3</div>
+            <div class="tool-text">
+              <div class="tool-name">Amazon S3</div>
+              <div class="tool-desc">Scalable object storage — your data lake foundation. Store raw data, processed datasets, model artifacts. Virtually unlimited, ~$0.023/GB/month.</div>
+              <span class="tool-license lic-managed">Managed · Pay-as-you-go</span>
+            </div>
+          </div>
+          <div class="tool-item">
+            <div class="tool-icon tool-icon-aws">GL</div>
+            <div class="tool-text">
+              <div class="tool-name">AWS Glue</div>
+              <div class="tool-desc">Serverless ETL — discover, catalog, and transform data. Glue Catalog acts as a Hive-compatible metadata store. Auto-generates ETL code.</div>
+              <span class="tool-license lic-managed">Managed · Serverless</span>
+            </div>
+          </div>
+          <div class="tool-item">
+            <div class="tool-icon tool-icon-aws">KN</div>
+            <div class="tool-text">
+              <div class="tool-name">Amazon Kinesis</div>
+              <div class="tool-desc">Managed streaming data ingestion for real-time ML pipelines. Kinesis Data Streams for ingestion; Firehose for delivery to S3/Redshift.</div>
+              <span class="tool-license lic-managed">Managed · Per-shard pricing</span>
+            </div>
+          </div>
+          <div class="tool-item">
+            <div class="tool-icon tool-icon-aws">AT</div>
+            <div class="tool-text">
+              <div class="tool-name">Amazon Athena</div>
+              <div class="tool-desc">Serverless SQL on S3. Query your data lake without loading into a database. Pay per query. Integrates natively with Glue Data Catalog.</div>
+              <span class="tool-license lic-managed">Managed · $5/TB scanned</span>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- OSS Tools -->
+      <div class="tool-group">
+        <div class="tool-group-label oss-label"><span class="group-badge group-badge-oss"></span>Open Source</div>
+        <div class="tool-list">
+          <div class="tool-item">
+            <div class="tool-icon tool-icon-oss">SP</div>
+            <div class="tool-text">
+              <div class="tool-name">Apache Spark (on EMR)</div>
+              <div class="tool-desc">Distributed data processing at any scale. Run on AWS EMR Serverless for massive transformations without cluster management.</div>
+              <span class="tool-license lic-apache">Apache 2.0</span>
+            </div>
+          </div>
+          <div class="tool-item">
+            <div class="tool-icon tool-icon-oss">dbt</div>
+            <div class="tool-text">
+              <div class="tool-name">dbt Core</div>
+              <div class="tool-desc">Transform data in your warehouse using SQL + Jinja. Version-controlled data models, lineage tracking, tests. Runs free against Athena/Redshift.</div>
+              <span class="tool-license lic-apache">Apache 2.0</span>
+            </div>
+          </div>
+          <div class="tool-item">
+            <div class="tool-icon tool-icon-oss">DL</div>
+            <div class="tool-text">
+              <div class="tool-name">Delta Lake / Apache Iceberg</div>
+              <div class="tool-desc">ACID transactions on S3. Table format that adds versioning, time-travel, and schema evolution to your data lake. Essential for reliable ML datasets.</div>
+              <span class="tool-license lic-apache">Apache 2.0</span>
+            </div>
+          </div>
+          <div class="tool-item">
+            <div class="tool-icon tool-icon-oss">GE</div>
+            <div class="tool-text">
+              <div class="tool-name">Great Expectations</div>
+              <div class="tool-desc">Define data quality rules as code. Validate datasets automatically in pipelines. Catches schema drift and anomalies before they corrupt training data.</div>
+              <span class="tool-license lic-apache">Apache 2.0</span>
+            </div>
+          </div>
+          <div class="tool-item">
+            <div class="tool-icon tool-icon-oss">DV</div>
+            <div class="tool-text">
+              <div class="tool-name">DVC (Data Version Control)</div>
+              <div class="tool-desc">Git for datasets and ML artifacts. Track large files in S3 with a git-like CLI. Full lineage from raw data → trained model. Reproducible experiments.</div>
+              <span class="tool-license lic-apache">Apache 2.0</span>
+            </div>
+          </div>
+        </div>
+      </div>
+
+    </div>
+  </div>
+
+  <div class="connector">
+    <div class="connector-line"></div>
+    <div class="connector-arrow"></div>
+    <div class="connector-line"></div>
+  </div>
+
+  <!-- ═══════════════════════════════════════════ -->
+  <!-- STAGE 2: FEATURE STORE                      -->
+  <!-- ═══════════════════════════════════════════ -->
+  <div class="stage" id="s2">
+    <div class="stage-accent" style="background:var(--stage2)"></div>
+    <div class="stage-header">
+      <div class="stage-num-block">
+        <div class="stage-number">Stage 02 · Features</div>
+        <div class="stage-name">Feature<br>Store</div>
+        <div class="stage-tagline">Centralize, reuse, and consistently serve engineered features for training and inference</div>
+      </div>
+      <div class="stage-meta">
+        <p class="stage-desc">The feature store bridges data engineering and model training. It eliminates training-serving skew by guaranteeing that the same feature logic runs in both environments. Teams share features instead of recomputing them, dramatically reducing duplication.</p>
+        <div class="stage-count">1 AWS · 2 OSS</div>
+      </div>
+    </div>
+    <div class="stage-body">
+
+      <div class="tool-group">
+        <div class="tool-group-label aws-label"><span class="group-badge group-badge-aws"></span>AWS Services</div>
+        <div class="tool-list">
+          <div class="tool-item">
+            <div class="tool-icon tool-icon-aws">SF</div>
+            <div class="tool-text">
+              <div class="tool-name">SageMaker Feature Store</div>
+              <div class="tool-desc">Fully managed online (DynamoDB-backed, low-latency) and offline (S3-backed) feature store. Point-in-time correct feature retrieval for training. Integrates with SageMaker Pipelines natively.</div>
+              <span class="tool-license lic-managed">Managed · Pay-as-you-go</span>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div class="tool-group">
+        <div class="tool-group-label oss-label"><span class="group-badge group-badge-oss"></span>Open Source</div>
+        <div class="tool-list">
+          <div class="tool-item">
+            <div class="tool-icon tool-icon-oss">FS</div>
+            <div class="tool-text">
+              <div class="tool-name">Feast</div>
+              <div class="tool-desc">The leading open-source feature store. Define features in Python, deploy to Redis (online) + S3/Parquet (offline). Point-in-time joins for training datasets. Works perfectly with AWS infrastructure.</div>
+              <span class="tool-license lic-apache">Apache 2.0</span>
+            </div>
+          </div>
+          <div class="tool-item">
+            <div class="tool-icon tool-icon-oss">HP</div>
+            <div class="tool-text">
+              <div class="tool-name">Hopsworks (Community)</div>
+              <div class="tool-desc">Open-source platform with a mature feature store, feature pipelines, and a model registry. Community edition is self-hostable on EC2 or EKS. Python-native API.</div>
+              <span class="tool-license lic-apache">Apache 2.0 (Community)</span>
+            </div>
+          </div>
+        </div>
+      </div>
+
+    </div>
+  </div>
+
+  <div class="connector">
+    <div class="connector-line"></div>
+    <div class="connector-arrow"></div>
+    <div class="connector-line"></div>
+  </div>
+
+  <!-- ═══════════════════════════════════════════ -->
+  <!-- STAGE 3: EXPERIMENTATION                    -->
+  <!-- ═══════════════════════════════════════════ -->
+  <div class="stage" id="s3">
+    <div class="stage-accent" style="background:var(--stage3)"></div>
+    <div class="stage-header">
+      <div class="stage-num-block">
+        <div class="stage-number">Stage 03 · Research</div>
+        <div class="stage-name">Experi&shy;mentation<br>&amp; Tracking</div>
+        <div class="stage-tagline">Log runs, compare metrics, tune hyperparameters, reproduce results</div>
+      </div>
+      <div class="stage-meta">
+        <p class="stage-desc">Where data scientists live. Experiment tracking captures every run — parameters, metrics, code version, artifacts — so any result can be reproduced. Hyperparameter optimization automates the search for the best configuration. The IDE keeps everything collaborative.</p>
+        <div class="stage-count">2 AWS · 4 OSS</div>
+      </div>
+    </div>
+    <div class="stage-body">
+
+      <div class="tool-group">
+        <div class="tool-group-label aws-label"><span class="group-badge group-badge-aws"></span>AWS Services</div>
+        <div class="tool-list">
+          <div class="tool-item">
+            <div class="tool-icon tool-icon-aws">MF</div>
+            <div class="tool-text">
+              <div class="tool-name">SageMaker MLflow (Managed)</div>
+              <div class="tool-desc">Fully managed MLflow tracking server on AWS. No infrastructure to spin up — just a tracking URI. IAM auth, S3-backed artifact store, persists across sessions. The easiest way to run MLflow on AWS.</div>
+              <span class="tool-license lic-managed">Managed · Hourly pricing</span>
+            </div>
+          </div>
+          <div class="tool-item">
+            <div class="tool-icon tool-icon-aws">ST</div>
+            <div class="tool-text">
+              <div class="tool-name">SageMaker Studio</div>
+              <div class="tool-desc">Browser-based IDE purpose-built for ML. Manage experiments, notebooks, training jobs, and model deployment from one unified UI. Integrates with all SageMaker services.</div>
+              <span class="tool-license lic-managed">Managed · Free IDE, pay for compute</span>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div class="tool-group">
+        <div class="tool-group-label oss-label"><span class="group-badge group-badge-oss"></span>Open Source</div>
+        <div class="tool-list">
+          <div class="tool-item">
+            <div class="tool-icon tool-icon-oss">ML</div>
+            <div class="tool-text">
+              <div class="tool-name">MLflow (self-hosted)</div>
+              <div class="tool-desc">The open-source experiment tracking, model registry, and lightweight serving framework. Self-host on EC2 with S3 artifact store + RDS backend. Or use SageMaker's managed version above.</div>
+              <span class="tool-license lic-apache">Apache 2.0</span>
+            </div>
+          </div>
+          <div class="tool-item">
+            <div class="tool-icon tool-icon-oss">OP</div>
+            <div class="tool-text">
+              <div class="tool-name">Optuna</div>
+              <div class="tool-desc">State-of-the-art hyperparameter optimization framework. Define a search space in Python, Optuna finds the best config using TPE, CMA-ES, or grid search. Integrates with MLflow for logging.</div>
+              <span class="tool-license lic-mit">MIT</span>
+            </div>
+          </div>
+          <div class="tool-item">
+            <div class="tool-icon tool-icon-oss">JU</div>
+            <div class="tool-text">
+              <div class="tool-name">JupyterLab</div>
+              <div class="tool-desc">The standard interactive notebook environment. Run in SageMaker Studio or on EC2. Extensions for Git, MLflow, and visualization. Where exploration begins.</div>
+              <span class="tool-license lic-bsd">BSD 3-Clause</span>
+            </div>
+          </div>
+          <div class="tool-item">
+            <div class="tool-icon tool-icon-oss">ZN</div>
+            <div class="tool-text">
+              <div class="tool-name">ZenML</div>
+              <div class="tool-desc">Open-source MLOps framework that unifies pipelines with experiment tracking. Abstracts infrastructure — the same pipeline code runs locally or on SageMaker Pipelines.</div>
+              <span class="tool-license lic-apache">Apache 2.0</span>
+            </div>
+          </div>
+        </div>
+      </div>
+
+    </div>
+  </div>
+
+  <div class="connector">
+    <div class="connector-line"></div>
+    <div class="connector-arrow"></div>
+    <div class="connector-line"></div>
+  </div>
+
+  <!-- ═══════════════════════════════════════════ -->
+  <!-- STAGE 4: TRAINING & COMPUTE                 -->
+  <!-- ═══════════════════════════════════════════ -->
+  <div class="stage" id="s4">
+    <div class="stage-accent" style="background:var(--stage4)"></div>
+    <div class="stage-header">
+      <div class="stage-num-block">
+        <div class="stage-number">Stage 04 · Core</div>
+        <div class="stage-name">Training<br>&amp; Compute</div>
+        <div class="stage-tagline">Scale model training from a single GPU to massive distributed clusters</div>
+      </div>
+      <div class="stage-meta">
+        <p class="stage-desc">The computational heart of MLOps. AWS provides fully managed training infrastructure that auto-provisions GPUs, handles distributed training, and integrates with your experiment tracker. Open-source frameworks provide the actual model training logic.</p>
+        <div class="stage-count">3 AWS · 5 OSS</div>
+      </div>
+    </div>
+    <div class="stage-body">
+
+      <div class="tool-group">
+        <div class="tool-group-label aws-label"><span class="group-badge group-badge-aws"></span>AWS Services</div>
+        <div class="tool-list">
+          <div class="tool-item">
+            <div class="tool-icon tool-icon-aws">TR</div>
+            <div class="tool-text">
+              <div class="tool-name">SageMaker Training Jobs</div>
+              <div class="tool-desc">Fully managed distributed training — submit a job, AWS provisions GPU/CPU instances (p4d, g5, Trn1), runs training, stores artifacts to S3, then terminates. Pay only for training duration.</div>
+              <span class="tool-license lic-managed">Managed · Per-second billing</span>
+            </div>
+          </div>
+          <div class="tool-item">
+            <div class="tool-icon tool-icon-aws">PP</div>
+            <div class="tool-text">
+              <div class="tool-name">SageMaker Pipelines</div>
+              <div class="tool-desc">Native CI/CD for ML — define training pipelines as DAGs. Rerun on schedule or on data triggers. Steps include processing, training, evaluation, model registration. Full lineage tracking.</div>
+              <span class="tool-license lic-managed">Managed · Free orchestration, pay for compute</span>
+            </div>
+          </div>
+          <div class="tool-item">
+            <div class="tool-icon tool-icon-aws">ES</div>
+            <div class="tool-text">
+              <div class="tool-name">EMR Serverless</div>
+              <div class="tool-desc">Run Spark ML workloads at scale without managing clusters. Submit PySpark jobs for large-scale feature engineering or batch inference. Automatically scales to zero when idle.</div>
+              <span class="tool-license lic-managed">Managed · Per vCPU-hour</span>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div class="tool-group">
+        <div class="tool-group-label oss-label"><span class="group-badge group-badge-oss"></span>Open Source (Frameworks)</div>
+        <div class="tool-list">
+          <div class="tool-item">
+            <div class="tool-icon tool-icon-oss">PT</div>
+            <div class="tool-text">
+              <div class="tool-name">PyTorch</div>
+              <div class="tool-desc">The dominant deep learning framework. Native AWS SageMaker containers available. Supports DDP for distributed training. PyTorch Lightning for structured training loops.</div>
+              <span class="tool-license lic-bsd">BSD 3-Clause</span>
+            </div>
+          </div>
+          <div class="tool-item">
+            <div class="tool-icon tool-icon-oss">HF</div>
+            <div class="tool-text">
+              <div class="tool-name">Hugging Face Transformers</div>
+              <div class="tool-desc">Pre-trained models (BERT, LLaMA, Mistral) and training utilities. AWS has official SageMaker HuggingFace containers. Fine-tune foundation models on your own data.</div>
+              <span class="tool-license lic-apache">Apache 2.0</span>
+            </div>
+          </div>
+          <div class="tool-item">
+            <div class="tool-icon tool-icon-oss">SK</div>
+            <div class="tool-text">
+              <div class="tool-name">scikit-learn</div>
+              <div class="tool-desc">The gold standard for classical ML — regression, classification, clustering, preprocessing. Integrates perfectly with SageMaker's sklearn container. Lightweight and dependency-free.</div>
+              <span class="tool-license lic-bsd">BSD 3-Clause</span>
+            </div>
+          </div>
+          <div class="tool-item">
+            <div class="tool-icon tool-icon-oss">XG</div>
+            <div class="tool-text">
+              <div class="tool-name">XGBoost / LightGBM</div>
+              <div class="tool-desc">Gradient boosted trees — often outperform deep learning on tabular data. AWS SageMaker has a built-in optimized XGBoost container. LightGBM trains faster on large datasets.</div>
+              <span class="tool-license lic-apache">Apache 2.0</span>
+            </div>
+          </div>
+          <div class="tool-item">
+            <div class="tool-icon tool-icon-oss">RY</div>
+            <div class="tool-text">
+              <div class="tool-name">Ray Train</div>
+              <div class="tool-desc">Distributed training orchestrator for PyTorch/TF. Scale from laptop to cluster with one line change. Handles worker coordination, fault tolerance, and checkpointing on EC2.</div>
+              <span class="tool-license lic-apache">Apache 2.0</span>
+            </div>
+          </div>
+        </div>
+      </div>
+
+    </div>
+  </div>
+
+  <div class="connector">
+    <div class="connector-line"></div>
+    <div class="connector-arrow"></div>
+    <div class="connector-line"></div>
+  </div>
+
+  <!-- ═══════════════════════════════════════════ -->
+  <!-- STAGE 5: MODEL REGISTRY                     -->
+  <!-- ═══════════════════════════════════════════ -->
+  <div class="stage" id="s5">
+    <div class="stage-accent" style="background:var(--stage5)"></div>
+    <div class="stage-header">
+      <div class="stage-num-block">
+        <div class="stage-number">Stage 05 · Governance</div>
+        <div class="stage-name">Model<br>Registry</div>
+        <div class="stage-tagline">Version, stage, and govern models — the gatekeeper before production</div>
+      </div>
+      <div class="stage-meta">
+        <p class="stage-desc">The model registry is the single source of truth for production-ready models. It stores versioned model artifacts, tracks metadata (training data, metrics, author), enforces staging gates (Staging → Production), and integrates with CI/CD for automated deployment triggers.</p>
+        <div class="stage-count">1 AWS · 2 OSS</div>
+      </div>
+    </div>
+    <div class="stage-body">
+
+      <div class="tool-group">
+        <div class="tool-group-label aws-label"><span class="group-badge group-badge-aws"></span>AWS Services</div>
+        <div class="tool-list">
+          <div class="tool-item">
+            <div class="tool-icon tool-icon-aws">MR</div>
+            <div class="tool-text">
+              <div class="tool-name">SageMaker Model Registry</div>
+              <div class="tool-desc">AWS-native model versioning with approval workflows. Register models from training jobs, attach metadata, require human approval before promotion to production. Triggers EventBridge on state changes for automated CI/CD.</div>
+              <span class="tool-license lic-managed">Managed · No additional cost</span>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div class="tool-group">
+        <div class="tool-group-label oss-label"><span class="group-badge group-badge-oss"></span>Open Source</div>
+        <div class="tool-list">
+          <div class="tool-item">
+            <div class="tool-icon tool-icon-oss">MR</div>
+            <div class="tool-text">
+              <div class="tool-name">MLflow Model Registry</div>
+              <div class="tool-desc">Version models logged during experiments. Transition through Staging → Production → Archived with comments and lineage. REST API for downstream integration. Works whether self-hosted or on SageMaker managed MLflow.</div>
+              <span class="tool-license lic-apache">Apache 2.0</span>
+            </div>
+          </div>
+          <div class="tool-item">
+            <div class="tool-icon tool-icon-oss">BN</div>
+            <div class="tool-text">
+              <div class="tool-name">BentoML</div>
+              <div class="tool-desc">Package models (any framework) into a standardized Bento format with dependencies, preprocessing, and serving logic baked in. The Bento is your deployment artifact. Integrates with MLflow.</div>
+              <span class="tool-license lic-apache">Apache 2.0</span>
+            </div>
+          </div>
+        </div>
+      </div>
+
+    </div>
+  </div>
+
+  <div class="connector">
+    <div class="connector-line"></div>
+    <div class="connector-arrow"></div>
+    <div class="connector-line"></div>
+  </div>
+
+  <!-- ═══════════════════════════════════════════ -->
+  <!-- STAGE 6: DEPLOYMENT & SERVING              -->
+  <!-- ═══════════════════════════════════════════ -->
+  <div class="stage" id="s6">
+    <div class="stage-accent" style="background:var(--stage6)"></div>
+    <div class="stage-header">
+      <div class="stage-num-block">
+        <div class="stage-number">Stage 06 · Production</div>
+        <div class="stage-name">Deployment<br>&amp; Serving</div>
+        <div class="stage-tagline">Expose models as APIs, streaming endpoints, or batch jobs with low latency at scale</div>
+      </div>
+      <div class="stage-meta">
+        <p class="stage-desc">Deployment is where models create value. Real-time endpoints serve predictions in milliseconds. Batch transform handles millions of records asynchronously. CI/CD ensures safe rollouts with canary testing and rollback. Infrastructure as code makes it all repeatable.</p>
+        <div class="stage-count">4 AWS · 4 OSS</div>
+      </div>
+    </div>
+    <div class="stage-body">
+
+      <div class="tool-group">
+        <div class="tool-group-label aws-label"><span class="group-badge group-badge-aws"></span>AWS Services</div>
+        <div class="tool-list">
+          <div class="tool-item">
+            <div class="tool-icon tool-icon-aws">EP</div>
+            <div class="tool-text">
+              <div class="tool-name">SageMaker Real-Time Endpoints</div>
+              <div class="tool-desc">Managed REST API endpoints — deploy any model container, get a HTTPS URL. Auto-scaling, multi-model endpoints, shadow testing, canary deployments. Supports data capture for monitoring.</div>
+              <span class="tool-license lic-managed">Managed · Per instance-hour</span>
+            </div>
+          </div>
+          <div class="tool-item">
+            <div class="tool-icon tool-icon-aws">BT</div>
+            <div class="tool-text">
+              <div class="tool-name">SageMaker Batch Transform</div>
+              <div class="tool-desc">Async batch inference on large datasets stored in S3. Provisions instances, runs predictions, writes output, terminates. No persistent endpoint needed — cost-efficient for non-real-time use cases.</div>
+              <span class="tool-license lic-managed">Managed · Pay per job</span>
+            </div>
+          </div>
+          <div class="tool-item">
+            <div class="tool-icon tool-icon-aws">CD</div>
+            <div class="tool-text">
+              <div class="tool-name">AWS CodePipeline + CodeBuild</div>
+              <div class="tool-desc">CI/CD for ML model deployment. Trigger from model approval in registry → build container → run integration tests → deploy to endpoint. Integrates with GitHub via CodeConnections.</div>
+              <span class="tool-license lic-managed">Managed · Pay-as-you-go</span>
+            </div>
+          </div>
+          <div class="tool-item">
+            <div class="tool-icon tool-icon-aws">LC</div>
+            <div class="tool-text">
+              <div class="tool-name">AWS Lambda + API Gateway</div>
+              <div class="tool-desc">Serverless ML inference for lightweight models. Zero cold-start for small models, sub-millisecond latency. Ideal for feature preprocessing, post-processing, or routing between models.</div>
+              <span class="tool-license lic-managed">Managed · Per request</span>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div class="tool-group">
+        <div class="tool-group-label oss-label"><span class="group-badge group-badge-oss"></span>Open Source</div>
+        <div class="tool-list">
+          <div class="tool-item">
+            <div class="tool-icon tool-icon-oss">FA</div>
+            <div class="tool-text">
+              <div class="tool-name">FastAPI</div>
+              <div class="tool-desc">High-performance Python API framework for custom model serving. Build your own inference server with auto-generated OpenAPI docs. Containerize with Docker, deploy to SageMaker or ECS/EKS.</div>
+              <span class="tool-license lic-mit">MIT</span>
+            </div>
+          </div>
+          <div class="tool-item">
+            <div class="tool-icon tool-icon-oss">TN</div>
+            <div class="tool-text">
+              <div class="tool-name">Triton Inference Server</div>
+              <div class="tool-desc">NVIDIA's open-source inference server — optimized for GPU workloads. Supports PyTorch, TensorFlow, ONNX, TensorRT simultaneously. Use as SageMaker container for high-throughput serving.</div>
+              <span class="tool-license lic-bsd">BSD 3-Clause</span>
+            </div>
+          </div>
+          <div class="tool-item">
+            <div class="tool-icon tool-icon-oss">TF</div>
+            <div class="tool-text">
+              <div class="tool-name">Terraform / CDK</div>
+              <div class="tool-desc">Infrastructure as code for your entire MLOps stack on AWS. Define SageMaker endpoints, S3 buckets, IAM roles, and pipelines reproducibly. AWS CDK uses Python/TypeScript for native AWS abstractions.</div>
+              <span class="tool-license lic-mit">MIT / Apache 2.0</span>
+            </div>
+          </div>
+          <div class="tool-item">
+            <div class="tool-icon tool-icon-oss">GH</div>
+            <div class="tool-text">
+              <div class="tool-name">GitHub Actions</div>
+              <div class="tool-desc">Free CI/CD for public repos (unlimited) or 2,000 min/month for private. Trigger model training on PR merge, run DVC pipelines, push Docker images to ECR, deploy to SageMaker endpoints.</div>
+              <span class="tool-license lic-mit">Free tier / MIT runner</span>
+            </div>
+          </div>
+        </div>
+      </div>
+
+    </div>
+  </div>
+
+  <div class="connector">
+    <div class="connector-line"></div>
+    <div class="connector-arrow"></div>
+    <div class="connector-line"></div>
+  </div>
+
+  <!-- ═══════════════════════════════════════════ -->
+  <!-- STAGE 7: MONITORING & OBSERVABILITY         -->
+  <!-- ═══════════════════════════════════════════ -->
+  <div class="stage" id="s7">
+    <div class="stage-accent" style="background:var(--stage7)"></div>
+    <div class="stage-header">
+      <div class="stage-num-block">
+        <div class="stage-number">Stage 07 · Sustain</div>
+        <div class="stage-name">Monitoring<br>&amp; Observ.</div>
+        <div class="stage-tagline">Detect drift, alert on degradation, close the feedback loop, trigger retraining</div>
+      </div>
+      <div class="stage-meta">
+        <p class="stage-desc">Models degrade silently — the world changes but the model doesn't. Monitoring catches data drift, prediction drift, and infrastructure failures. When degradation is detected, automated retraining pipelines can kick off Stage 3–5 all over again, closing the loop.</p>
+        <div class="stage-count">2 AWS · 4 OSS</div>
+      </div>
+    </div>
+    <div class="stage-body">
+
+      <div class="tool-group">
+        <div class="tool-group-label aws-label"><span class="group-badge group-badge-aws"></span>AWS Services</div>
+        <div class="tool-list">
+          <div class="tool-item">
+            <div class="tool-icon tool-icon-aws">MM</div>
+            <div class="tool-text">
+              <div class="tool-name">SageMaker Model Monitor</div>
+              <div class="tool-desc">Continuously monitors real-time endpoints for data quality, model quality, bias, and feature attribution drift. Captures input/output data to S3, runs scheduled analysis jobs, triggers CloudWatch alarms on violations.</div>
+              <span class="tool-license lic-managed">Managed · Pay per monitoring job</span>
+            </div>
+          </div>
+          <div class="tool-item">
+            <div class="tool-icon tool-icon-aws">CW</div>
+            <div class="tool-text">
+              <div class="tool-name">Amazon CloudWatch</div>
+              <div class="tool-desc">AWS-native metrics, logs, dashboards, and alarms. Monitor endpoint latency, error rates, invocation counts. Set alarms that trigger EventBridge → Step Functions → retraining pipeline automatically.</div>
+              <span class="tool-license lic-managed">Managed · Pay per metric/log</span>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div class="tool-group">
+        <div class="tool-group-label oss-label"><span class="group-badge group-badge-oss"></span>Open Source</div>
+        <div class="tool-list">
+          <div class="tool-item">
+            <div class="tool-icon tool-icon-oss">EV</div>
+            <div class="tool-text">
+              <div class="tool-name">Evidently AI</div>
+              <div class="tool-desc">Open-source ML observability — generate drift reports, data quality checks, and model performance tests as HTML or JSON. Run in SageMaker Processing Jobs on a schedule. Integrates with Grafana dashboards.</div>
+              <span class="tool-license lic-apache">Apache 2.0</span>
+            </div>
+          </div>
+          <div class="tool-item">
+            <div class="tool-icon tool-icon-oss">PR</div>
+            <div class="tool-text">
+              <div class="tool-name">Prometheus + Grafana</div>
+              <div class="tool-desc">The standard OSS observability stack. Scrape metrics from SageMaker endpoints, Kubernetes pods, and custom model servers. Grafana dashboards visualize latency, throughput, drift scores, and business KPIs.</div>
+              <span class="tool-license lic-apache">Apache 2.0</span>
+            </div>
+          </div>
+          <div class="tool-item">
+            <div class="tool-icon tool-icon-oss">AH</div>
+            <div class="tool-text">
+              <div class="tool-name">Apache Airflow (MWAA)</div>
+              <div class="tool-desc">Schedule retraining pipelines triggered by monitoring alerts. A DAG watches for drift → pulls fresh data → kicks off SageMaker Training Job → registers new model. AWS MWAA provides managed Airflow.</div>
+              <span class="tool-license lic-apache">Apache 2.0</span>
+            </div>
+          </div>
+          <div class="tool-item">
+            <div class="tool-icon tool-icon-oss">NB</div>
+            <div class="tool-text">
+              <div class="tool-name">Nannyml</div>
+              <div class="tool-desc">Estimates model performance without ground truth labels — critical when you don't get labels for days or weeks after prediction. Detects covariate shift and CBPE performance estimation on live data.</div>
+              <span class="tool-license lic-apache">Apache 2.0</span>
+            </div>
+          </div>
+        </div>
+      </div>
+
+    </div>
+  </div>
+
+  <!-- ── FOOTER ── -->
+  <div class="doc-footer">
+    <div>
+      <div class="footer-title">MLOps on AWS</div>
+      <div style="font-size:12px;color:var(--ink4);margin-top:4px;font-family:'IBM Plex Sans',sans-serif;">Open Source · Unlicensed · Production-ready</div>
+    </div>
+    <div class="footer-note">
+      All open-source tools are Apache 2.0, MIT, or BSD licensed<br>
+      AWS services billed on infrastructure use — zero platform license fees<br>
+      <span style="color:var(--ink4)">Data Engineering → Feature Store → Experimentation → Training → Registry → Serving → Monitoring</span>
+    </div>
+  </div>
+
+</main>
+
+<script>
+  // Scroll-triggered stage reveals with stagger
+  const stages = document.querySelectorAll('.stage');
+
+  const observer = new IntersectionObserver((entries) => {
+    entries.forEach((entry) => {
+      if (entry.isIntersecting) {
+        entry.target.classList.add('visible');
+        observer.unobserve(entry.target);
+      }
+    });
+  }, { threshold: 0.07 });
+
+  stages.forEach(s => observer.observe(s));
+
+  // Tool item hover enhancement
+  document.querySelectorAll('.tool-item').forEach(item => {
+    item.addEventListener('mouseenter', () => {
+      item.style.transition = 'all 0.15s ease';
+    });
+  });
+</script>
+</body>
+</html>
