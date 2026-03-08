@@ -2,6 +2,7 @@
 
 
 print("hello world")
+print ("git test")
 
 a = 23
 b = 45
